@@ -4,6 +4,9 @@ import hashlib
 import hmac
 from datetime import datetime
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 class APIPrivate(object):
   """
@@ -54,3 +57,32 @@ class APIPrivate(object):
 
     res = requests.get(self.endpoint + self.path, headers=self.client.headers)
     return res.json()
+
+
+class Ticker(object):
+  def __init__(self, time: datetime, bid: float, ask: float):
+    self.time = time
+    self.bid = bid
+    self.ask = ask
+
+  @property
+  def mid_price(self):
+    return (self.bid + self.ask) / 2
+
+  @property
+  def values(self):
+    return {
+      'time': self.time,
+      'bid': self.bid,
+      'ask': self.ask
+    }
+
+  def truncate_date_time(self, duration) -> datetime:
+    ticker_time = self.time
+    if duration == "1m":
+      time_format = '%Y-%m-%d %H:%M'
+    else:
+      logger.warning("Unknown duration: {0}".format(duration))
+
+    str_date = datetime.strftime(ticker_time, time_format)
+    return datetime.strptime(str_date, time_format)
