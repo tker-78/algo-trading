@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 class BaseCandleMixin(object):
   time = Column(DateTime, primary_key=True, nullable=False)
   open = Column(Float)
-  close = Column(Float)
   high = Column(Float)
   low = Column(Float)
+  close = Column(Float)
   volume = Column(Integer)
 
   @classmethod
@@ -57,6 +57,16 @@ class BaseCandleMixin(object):
       return None
     
     return candles
+
+  @property
+  def value(self):
+    return {
+      'time': datetime.datetime.strftime(self.time, '%Y-%m-%d %H:%M:%S'),
+      'open': self.open,
+      'high': self.high,
+      'low': self.low,
+      'close': self.close
+    }
 
 class UsdJpyBaseCandle1H(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_1H'
