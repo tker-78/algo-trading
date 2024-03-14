@@ -23,7 +23,7 @@ lock = threading.Lock()
 @contextmanager
 def session_scope():
   session = Session()
-  session.ezpire_on_commit = False
+  session.expire_on_commit = False
   try:
     lock.acquire()
     yield session

@@ -1,6 +1,7 @@
 from app.models.candle import BaseCandleMixin
 import talib
 import numpy as np
+from app.models.candle import factory_base_candle
 
 # インジケータ類はコンポジションでdataframeが保持する
 class Sma(object):
@@ -20,9 +21,9 @@ class DataframeCandle(object):
   特定の期間のcandleを格納し、分析、表示に使うデータを準備、整形するためのクラス
   """
 
-  def __init__(self, duration: str, candle_cls: BaseCandleMixin):
+  def __init__(self, duration: str):
     self.duration = duration
-    self.candle_cls = candle_cls
+    self.candle_cls = factory_base_candle(duration)
     self.candles = []
     self.smas = []
     self.emas = []

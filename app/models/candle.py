@@ -71,15 +71,29 @@ class BaseCandleMixin(object):
 class UsdJpyBaseCandle1H(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_1H'
 
+class UsdJpyBaseCandle5M(BaseCandleMixin, Base):
+  __tablename__ = 'USD_JPY_5M'
+
 class UsdJpyBaseCandle1M(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_1M'
 
+class UsdJpyBaseCandle1s(BaseCandleMixin, Base):
+  __tablename__ = 'USD_JPY_1S'
 
+def factory_base_candle(duration) -> BaseCandleMixin:
+  if duration == '1h':
+    return UsdJpyBaseCandle1H
+  elif duration == '1m':
+    return UsdJpyBaseCandle1M
+  elif duration == '5m':
+    return UsdJpyBaseCandle5M
+  elif duration == '1s':
+    return UsdJpyBaseCandle1s
+  else:
+    return None
 
-def create_candle(ticker: Ticker) -> bool:
-  # should be refactored later(it is hard coded)
-  cls = UsdJpyBaseCandle1M
-  duration = "1m"
+def create_candle(ticker: Ticker, duration) -> bool:
+  cls = factory_base_candle(duration)
   ticker_time = ticker.truncate_date_time(duration)
   current_candle = cls.get(ticker_time)
   price = ticker.mid_price

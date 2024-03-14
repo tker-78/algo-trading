@@ -6,6 +6,8 @@ from gmo.apiclient import Ticker
 from app.models.candle import create_candle
 from app.models.candle import UsdJpyBaseCandle1M
 from gmo.apiclient import Ticker
+import pytz
+import constants
 
 logger = logging.getLogger(__name__)
 
@@ -26,25 +28,23 @@ class Streamer():
     # data["timestamp"]をdatetimeに変換する
     dateTime = datetime.datetime.strptime(data["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
+    # Convert the datetime object to JST
+    jst_dateTime = dateTime.astimezone(pytz.timezone('Asia/Tokyo'))
+    offset = datetime.timedelta(hours=9)
+    jst_dateTime = jst_dateTime + offset
+
     # tickerオブジェクトを作成する
-    ticker = Ticker(dateTime, data["bid"], data["ask"])
+    ticker = Ticker(jst_dateTime, data["bid"], data["ask"])
 
     # data["bid"], data["ask"]をfloatに変換してtickerに格納する
     ticker.ask = float(data["ask"])
     ticker.bid = float(data["bid"])
-    
 
-    is_created = create_candle(ticker)
-    if is_created:
-      print("candle created")
-      print("symbol:", data["symbol"], "ask:", data["ask"], "bid:", data["bid"], "time:", data["timestamp"])
-      print("ticker", ticker.values)
-
-
-
-
-
-
+    for duration in constants.DURATIONS:
+      is_created = create_candle(ticker, duration)
+      if is_created:
+        print("{} candle created".format(duration))
+        print("ticker", ticker.values)
 
 
   def run(self):

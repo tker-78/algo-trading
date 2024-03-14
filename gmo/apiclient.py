@@ -82,11 +82,14 @@ class Ticker(object):
     ticker_time = self.time
     if duration == "1m":
       time_format = '%Y-%m-%d %H:%M'
-    elif duration == "5m":
-      new_minute = math.floor(self.time.second / 5) * 5
-      ticker_time = datetime(self.time.year, self.time.month, self.time.day, new_minute, 0)
+    elif duration == '5m':
+      new_minute = math.floor(self.time.minute / 5) * 5
+      ticker_time = datetime(self.time.year, self.time.month, self.time.day, self.time.hour, new_minute)
       time_format = '%Y-%m-%d %H:%M'
-
+    elif duration == '1h':
+      time_format = '%Y-%m-%d %H'
+    elif duration == '1s':
+      time_format = '%Y-%m-%d %H:%M:%S'
 
     else:
       logger.warning("Unknown duration: {0}".format(duration))
