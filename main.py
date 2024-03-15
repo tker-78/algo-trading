@@ -14,7 +14,8 @@ from gmo.apiclient import APIPrivate
 from app.controllers.stream import Streamer
 from app.models.candle import UsdJpyBaseCandle1M
 from app.models.dfcandle import DataframeCandle
-
+from app.models.backtest import BackTestBase
+import constants
 
 # class SampleClass(object):
 #   @classmethod
@@ -25,9 +26,14 @@ from app.models.dfcandle import DataframeCandle
 if __name__ == '__main__':
 
   # apiClient = APIPrivate(settings.apiLabel, settings.apiKey, settings.secretKey)
-  streamer = Streamer()
-  streamer.run()
 
-  # df = DataframeCandle(duration='1m', candle_cls=UsdJpyBaseCandle1M)
-  # df.set_all_candles(limit=100)
+  # Since streamer is public API, apiClient authentication not required
+  # streamer = Streamer()
+  # streamer.run()
 
+  df = BackTestBase(datetime(2023, 1, 1, 1, 1), datetime.now(), "1h", 100, 0, 0)
+
+  df.get_data_from_csv("2022-03-25.csv")
+  print(df.data)
+  print(df.data.info())
+  df.plot_data()

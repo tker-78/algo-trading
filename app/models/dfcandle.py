@@ -2,6 +2,7 @@ from app.models.candle import BaseCandleMixin
 import talib
 import numpy as np
 from app.models.candle import factory_base_candle
+from datetime import datetime
 
 # インジケータ類はコンポジションでdataframeが保持する
 class Sma(object):
@@ -31,6 +32,10 @@ class DataframeCandle(object):
 
   def set_all_candles(self, limit: int = 100) -> list:
     self.candles = self.candle_cls.get_all_candles(limit=limit)
+    return self.candles
+
+  def set_candles_between(self, start_time: datetime, end_time: datetime) -> list:
+    self.candles = self.candle_cls.get_candles_between(start_time, end_time)
     return self.candles
 
   @property

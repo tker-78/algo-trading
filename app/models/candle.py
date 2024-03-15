@@ -58,6 +58,16 @@ class BaseCandleMixin(object):
     
     return candles
 
+  @classmethod
+  def get_candles_between(cls, start_time: datetime, end_time: datetime):
+    with session_scope() as session:
+      candles = session.query(cls).filter(cls.time >= start_time).filter(cls.time <= end_time).all()
+    
+    if candles is None:
+      return None
+    
+    return candles
+
   @property
   def value(self):
     return {
