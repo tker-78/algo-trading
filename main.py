@@ -15,6 +15,7 @@ from app.controllers.stream import Streamer
 from app.models.candle import UsdJpyBaseCandle1M
 from app.models.dfcandle import DataframeCandle
 from app.models.backtest import BackTestBase
+from app.models.backtestlongonly import BackTestLongOnly
 import constants
 
 # class SampleClass(object):
@@ -31,9 +32,19 @@ if __name__ == '__main__':
   # streamer = Streamer()
   # streamer.run()
 
-  df = BackTestBase(datetime(2023, 1, 1, 1, 1), datetime.now(), "1h", 100, 0, 0)
+  # def run_strategies():
+  #   lobt.run_sma_strategy(4,35,plot=True)
 
-  df.get_data_from_csv("2022-03-25.csv")
-  print(df.data)
-  print(df.data.info())
-  df.plot_data()
+  lobt = BackTestLongOnly(
+      datetime(2022, 3,1), 
+      datetime(2024, 3, 31), 
+      "1m", 
+      100000, 
+      0, 
+      0,
+      '2022-03-25.csv'
+    )
+
+  lobt.run_momentum_strategy(3)
+
+  # run_strategies()

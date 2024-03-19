@@ -3,6 +3,7 @@ from app.models.dfcandle import DataframeCandle
 import mplfinance as mpf
 import os
 import constants
+import numpy as np
 
 class BackTestBase(object):
   '''バックテストのための基底クラス
@@ -37,16 +38,21 @@ class BackTestBase(object):
 
   
   '''
-  def __init__(self, start, end, duration, amount, ftc,  ptc):
+  def __init__(self, start, end, duration, amount, ftc,  ptc, csv: str=None):
     self.start = start
     self.end = end
     self.duration = duration
     self.amount = amount
+    self.initial_amount = amount # 初期口座残高の保存
     self.ftc = ftc
     self.ptc = ptc
     self.units = 0
     self.position = 0
-    self.get_data()
+    self.trades = 0
+    if csv is None:
+      self.get_data()
+    elif csv:
+      self.get_data_from_csv(csv)
 
   def get_data(self):
     '''データを取得する'''
@@ -59,23 +65,27 @@ class BackTestBase(object):
 
     candles = pd.DataFrame(data)
     candles['time'] = pd.to_datetime(candles['time'])
+    candles['volume'] = 0
+    candles['return'] = np.log(candles['close'] / candles['close'].shift(1))
     candles = candles.set_index('time')
     self.data = candles.dropna()
 
   def get_data_from_csv(self, filename: str):
+    # todo: csvのデータ形式にあわせでdataframeの形式を指定する
     file_path = os.path.join(constants.ROOT_PATH, "data", filename)
     raw = pd.read_csv(file_path, index_col='date')
     raw.index = pd.to_datetime(raw.index)
     raw = pd.DataFrame(raw)
     raw = raw.loc[self.start:self.end]
+    raw['return'] = np.log(raw['close']/ raw['close'].shift(1))
     self.data = raw.dropna()
 
     
 
-  def plot_data(self):
+  def plot_data(self, type: str = 'candle', mav=[5, 30, 120], volume=True):
     '''データをプロットする
     '''
-    mpf.plot(self.data, type='candle')
+    mpf.plot(self.data, type=type, mav=mav, volume=volume)
 
   def get_candle(self, index):
     '''ローソク足の価格情報を取得する
@@ -128,30 +138,24 @@ class BackTestBase(object):
     '''
     date, mid = self.get_date_price(index)
     if units is None:
-      units = int(amount / mid )
+      units = int(self.amount / mid )
 
     self.amount -= mid * units * (1 + self.ptc) + self.ftc
     self.units += units
+    self.trades += 1
     self.position = 1
 
-    if self.verbose:
-      '''実行時の情報を表示する'''
-      pass
 
-  def place_sell_order(self, index, units=None, amount=None):
+  def place_sell_order(self, index):
     '''新規注文を発行する
+    全ての建玉を売却する
     '''
     date, mid = self.get_date_price(index)
-    if units is None:
-      units = int(amount / mid )
 
-    self.amount += mid * units * (1 - self.ptc) + self.ftc
-    self.units -= units
+    self.amount += mid * self.units * (1 - self.ptc) + self.ftc
+    self.units = 0
+    self.trades += 1
     self.position = 0
-
-    if self.verbose:
-      '''実行時の情報を表示する'''
-      pass
 
 
   def close_out(self, index):
@@ -159,6 +163,14 @@ class BackTestBase(object):
     
     '''
     date, mid = self.get_date_price(index)
+    self.amount += self.units * mid
+    self.units = 0
+    self.trades += 1
+    print('Final balance: ', self.amount)
+    perf = ((self.amount - self.initial_amount) / self.initial_amount) * 100
+    print('Net Performance [%]:', perf)
+    print('Trades Executed [#]: {}'.format(self.trades))
+    print('=' * 55)
 
 
 
