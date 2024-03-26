@@ -70,10 +70,10 @@ class BackTestBase(object):
     candles = candles.set_index('time')
     self.data = candles.dropna()
 
-  def get_data_from_csv(self, filename: str):
+  def get_data_from_csv(self, year: str):
     # todo: csvのデータ形式にあわせでdataframeの形式を指定する
-    file_path = os.path.join(constants.ROOT_PATH, "data", filename)
-    raw = pd.read_csv(file_path, index_col='date')
+    file_path = os.path.join(constants.ROOT_PATH, "data", "m1", "usd_jpy_m1_{year}.csv".format(year=year))
+    raw = pd.read_csv(file_path, index_col='datetime')
     raw.index = pd.to_datetime(raw.index)
     raw = pd.DataFrame(raw)
     raw = raw.loc[self.start:self.end]
@@ -165,7 +165,8 @@ class BackTestBase(object):
     date, mid = self.get_date_price(index)
     self.amount += self.units * mid
     self.units = 0
-    self.trades += 1
+    if self.position == 1:
+      self.trades += 1
     print('Final balance: ', self.amount)
     perf = ((self.amount - self.initial_amount) / self.initial_amount) * 100
     print('Net Performance [%]:', perf)

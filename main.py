@@ -36,15 +36,18 @@ if __name__ == '__main__':
   #   lobt.run_sma_strategy(4,35,plot=True)
 
   lobt = BackTestLongOnly(
-      datetime(2022, 3,1), 
-      datetime(2024, 3, 31), 
+      # datetime(2022, 1,2, 17, 00), 
+      # datetime(2022, 12, 30, 16, 58), 
+      datetime(2021, 1, 4),
+      datetime(2021, 12, 30),
       "1m", 
       100000, 
       0, 
       0,
-      '2022-03-25.csv'
+      '2021'
     )
+  print(type(lobt.data))
 
-  lobt.run_momentum_strategy(3)
+  lobt.run_momentum_strategy(500, False)
 
   # run_strategies()

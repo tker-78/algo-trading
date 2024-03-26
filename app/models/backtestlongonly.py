@@ -73,7 +73,7 @@ class BackTestLongOnly(BackTestBase):
         plt.hist(self.data["position"], bins=35)
         plt.show()
 
-  def run_momentum_strategy(self, momentum):
+  def run_momentum_strategy(self, momentum, candle_plot=True):
     '''momentum戦略
     Parameters:
     ===========
@@ -104,6 +104,9 @@ class BackTestLongOnly(BackTestBase):
         if self.data["momentum"].iloc[i] < 0:
           self.place_sell_order(i)
     self.close_out(i)
+
+    if candle_plot:
+        mpf.plot(self.data.iloc[:, [0,1,2,3]], type='line')
 
 
 
