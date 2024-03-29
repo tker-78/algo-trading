@@ -99,12 +99,6 @@ class Conductor(object):
     return time, mid
 
 
-  def print_balance(self, index):
-    '''現在の資金残高を取得する
-    '''
-    pass
-
-    
 
   def get_equity(self):
     '''現在の評価額を取得する
@@ -114,17 +108,14 @@ class Conductor(object):
     return equity
 
   def place_buy_order(self, size=None) -> bool:
-    '''新規注文を発行する
+    '''新規の買い注文を発行する
     '''
-
     if size is None:
         # size = int(math.floor(bulk_size / 10000)) * 10000
         size = 10000
-    
     res = self.api_client.place_buy_order(size)
     # {'status': 0, 'data': [{'executionType': 'MARKET', 'orderId': 4015908, 'orderType': 'NORMAL', 'rootOrderId': 4015908, 'settleType': 'OPEN', 'side': 'BUY', 'size': '10000', 'status': 'EXECUTED', 'symbol': 'USD_JPY', 'timestamp': '2024-03-29T08:21:25.984Z'}], 'responsetime': '2024-03-29T08:21:26.245Z'}
     print("buy_order:", res)
-
     if res["data"][0]["status"] == 'EXECUTED':
         execution = self.api_client.get_execution(str(res["data"][0]["orderId"]))
         price = float(execution["data"]["list"][0]["price"])
@@ -136,11 +127,8 @@ class Conductor(object):
         return True
     return False
 
-
   def place_sell_order(self) -> bool:
-    '''新規注文を発行する
-    全ての建玉を売却する
-    todo: 売り注文ではなく、建玉の売却の操作が必要
+    '''新規の売り注文を発行する
     '''
     logger.info(f'action=place_sell_order: starting')
     res = self.api_client.place_sell_order(size=self.units)
@@ -156,6 +144,7 @@ class Conductor(object):
         self.units = 0
         self.trades += 1
         self.position = 0
+        self.active_orders.append(res["data"][0]["orderId"])
         return True
     else:
         return False
@@ -177,9 +166,10 @@ class Conductor(object):
           size = int(res_close["data"][0]["size"])
           price = float(res_close["data"]["list"][0]["price"])
           self.balance += size * price
-          self.units = 0
+          self.units -= size
           self.trades += 1
           self.position = 0
+          self.active_orders.pop(0)
           logger.info("position closed: {0}".format(position_id))
           return True
       else:
@@ -213,6 +203,7 @@ class Conductor(object):
     else:
       return False
 
+  @property
   def values(self):
       return {'equity': self.get_equity(), 'units': self.units, 'position': self.position, 'active orders': self.active_orders }
 

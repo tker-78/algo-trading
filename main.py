@@ -28,20 +28,20 @@ if __name__ == '__main__':
     try:
       while True:
         if cond.get_equity() < cond.initial_balance * 0.9:
-          logger.info(f'action=execute close_out started | {cond.values()}')
+          logger.info(f'action=execute close_out started | {cond.values}')
           cond.close_out()
-          logger.info(f'action=execute close_out finished | {cond.values()}')
+          logger.info(f'action=execute close_out finished | {cond.values}')
           break
 
-        logger.info(f'action=execute current conductor values | {cond.values()}')
+        logger.info(f'action=execute current conductor values | {cond.values}')
         cond.get_data(5)
         print(cond.data.tail())
 
-        logger.info(f'action=execute start checking to place orders | {cond.values()} ')
-        # 最新のモメンタム値の取得
+        # execute momentum simulation
+        logger.info(f'action=execute start checking to place orders | {cond.values} ')
         latest_momentum = cond.data["momentum"].iloc[-1]
         if latest_momentum > 0 and cond.position == 0 and cond.check_spread():
-            logger.info(f'action=execute place buy order | {cond.values()}')
+            logger.info(f'action=execute place buy order | {cond.values}')
             is_ok = cond.place_buy_order()
             if is_ok:
                 logger.info(f'action=execute place buy order successful')
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         logger.error(f'action=execute error | {e}')
 
     finally:
-        logger.info(f'action=execute exit | {cond.values()}')
+        logger.info(f'action=execute exit | {cond.values}')
 
   def stream():
       streamer = Streamer()
@@ -68,7 +68,6 @@ if __name__ == '__main__':
 
   tpe = ThreadPoolExecutor(max_workers=2)
   tpe.submit(stream)
+
+  # uncomment here if you want to run the execute function
   # tpe.submit(execute)
-  # print(cond.get_equity())
-  # print(cond.initial_balance)
-  # print(cond.api_client.get_execution(str(4015908)))
