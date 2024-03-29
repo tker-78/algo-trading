@@ -77,6 +77,8 @@ class BaseCandleMixin(object):
       'low': self.low,
       'close': self.close
     }
+class UsdJpyBaseCandle4H(BaseCandleMixin, Base):
+  __tablename__ = 'USD_JPY_4H'
 
 class UsdJpyBaseCandle1H(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_1H'
@@ -91,7 +93,9 @@ class UsdJpyBaseCandle1s(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_1S'
 
 def factory_base_candle(duration) -> BaseCandleMixin:
-  if duration == '1h':
+  if duration == '4h':
+    return UsdJpyBaseCandle4H
+  elif duration == '1h':
     return UsdJpyBaseCandle1H
   elif duration == '1m':
     return UsdJpyBaseCandle1M

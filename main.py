@@ -1,53 +1,74 @@
+import time
 import logging
 import pandas as pd
-import sys
-import requests
-import json
-import hmac
-import hashlib
-import time
-import matplotlib
-import mplfinance as mpf
-from datetime import datetime
 import settings
+import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from gmo.apiclient import APIPrivate
 from app.controllers.stream import Streamer
-from app.models.candle import UsdJpyBaseCandle1M
-from app.models.dfcandle import DataframeCandle
-from app.models.backtest import BackTestBase
-from app.models.backtestlongonly import BackTestLongOnly
-import constants
+from app.models.conductor import Conductor
+
 
 # class SampleClass(object):
 #   @classmethod
 #   def show(cls, args):
 #     print(cls.__name__, args)
 
+logging.basicConfig(level=logging.INFO, filename=settings.logFileName, format='%(asctime)s - %(name)s - %(levelname)s -%(message)s')
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
 
-  # apiClient = APIPrivate(settings.apiLabel, settings.apiKey, settings.secretKey)
+  # 監視用のオブジェクトの生成
+  cond = Conductor()
 
-  # Since streamer is public API, apiClient authentication not required
-  # streamer = Streamer()
-  # streamer.run()
+  # 実行すると実際に約定するので注意!
+  def execute():
+    try:
+      while True:
+        if cond.get_equity() < cond.initial_balance * 0.9:
+          logger.info(f'action=execute close_out started | {cond.values()}')
+          cond.close_out()
+          logger.info(f'action=execute close_out finished | {cond.values()}')
+          break
 
-  # def run_strategies():
-  #   lobt.run_sma_strategy(4,35,plot=True)
+        logger.info(f'action=execute current conductor values | {cond.values()}')
+        cond.get_data(5)
+        print(cond.data.tail())
 
-  lobt = BackTestLongOnly(
-      # datetime(2022, 1,2, 17, 00), 
-      # datetime(2022, 12, 30, 16, 58), 
-      datetime(2021, 1, 4),
-      datetime(2021, 12, 30),
-      "1m", 
-      100000, 
-      0, 
-      0,
-      '2021'
-    )
-  print(type(lobt.data))
+        logger.info(f'action=execute start checking to place orders | {cond.values()} ')
+        # 最新のモメンタム値の取得
+        latest_momentum = cond.data["momentum"].iloc[-1]
+        if latest_momentum > 0 and cond.position == 0 and cond.check_spread():
+            logger.info(f'action=execute place buy order | {cond.values()}')
+            is_ok = cond.place_buy_order()
+            if is_ok:
+                logger.info(f'action=execute place buy order successful')
+            else:
+                logger.info(f'action=execute place buy order failed')
+        elif latest_momentum < 0 and cond.position == 1 and cond.check_spread():
+            is_ok = cond.place_sell_order()
+            if is_ok:
+                logger.info(f'action=execute place sell order successful')
+            else:
+                logger.info(f'action=execute place sell order failed')
 
-  lobt.run_momentum_strategy(500, False)
+        time.sleep(5)
+    except Exception as e:
+        logger.error(f'action=execute error | {e}')
 
-  # run_strategies()
+    finally:
+        logger.info(f'action=execute exit | {cond.values()}')
+
+  def stream():
+      streamer = Streamer()
+      print("streaming tick data...")
+      streamer.run()
+
+  tpe = ThreadPoolExecutor(max_workers=2)
+  tpe.submit(stream)
+  # tpe.submit(execute)
+  # print(cond.get_equity())
+  # print(cond.initial_balance)
+  # print(cond.api_client.get_execution(str(4015908)))

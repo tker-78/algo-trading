@@ -6,10 +6,16 @@ from datetime import datetime
 import time
 import logging
 import math
+import json
 
 logger = logging.getLogger(__name__)
 
-class APIPrivate(object):
+class APIPublic(object):
+  """todo: private APIアクセスはここに定義する"""
+  pass
+
+
+class APIPrivate(APIPublic):
   """
   GMO coin Private APIへのアクセスを制御するクラス
   apiClient = APIPrivate(api_label, api_key, secret_key)
@@ -27,9 +33,22 @@ class APIPrivate(object):
     # personal access token authorization
     self.client = requests.Session()
 
+  # public API methods(GET)
+  def get_spread(self, symbol="USD_JPY"):
+    endpoint = "https://forex-api.coin.z.com/public"
+    path = '/v1/ticker'
+    res = requests.get(endpoint + path)
+    js = res.json()
+    usd_jpy_ticker = js['data'][0]
+    ask = float(usd_jpy_ticker['ask'])
+    bid = float(usd_jpy_ticker['bid'])
+    truncated = math.floor((ask - bid) * 1000 ) / 10
+    return truncated
 
 
-  def private_authorization(self):
+
+  # authorization
+  def private_authorization_get(self):
     # todo
     method = "GET"
     timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
@@ -43,21 +62,134 @@ class APIPrivate(object):
     }
     self.client.headers.update(headers)
 
+  def private_authorization_post(self, timestamp, sign):
+    headers = {
+      "API-KEY": self.api_key,
+      "API-TIMESTAMP": timestamp,
+      "API-SIGN": sign
+    }
+    self.client.headers.update(headers)
 
+  #=================================================#
+
+
+  # private API methods(GET)
 
   def get_balance(self):
     self.path      = '/v1/account/assets'
-    self.private_authorization()
+    self.private_authorization_get()
 
     res = requests.get(self.endpoint + self.path, headers=self.client.headers)
     return res.json()
 
   def get_open_positions(self):
     self.path = '/v1/openPositions'
-    self.private_authorization()
+    self.private_authorization_get()
 
     res = requests.get(self.endpoint + self.path, headers=self.client.headers)
     return res.json()
+
+  def get_execution(self, order_id: str):
+    '''
+    response: {'status': 0, 'data': {'list': [{'amount': '0', 'executionId': 3368298, 'fee': '0', 'lossGain': '0', 'orderId': 4015908, 'positionId': 1640914, 'price': '151.365', 'settleType': 'OPEN', 'settledSwap': '0', 'side': 'BUY', 'size': '10000', 'symbol': 'USD_JPY', 'timestamp': '2024-03-29T08:21:25.985Z'}]}, 'responsetime': '2024-03-29T08:28:07.791Z'}
+    '''
+    self.path = '/v1/executions'
+    self.private_authorization_get()
+    params = {'orderId': str(order_id)}
+    res = requests.get(self.endpoint + self.path, headers=self.client.headers, params=params )
+    return res.json()
+
+  def get_assets(self):
+    self.path = '/v1/account/assets'
+    self.private_authorization_get()
+    res = requests.get(self.endpoint + self.path, headers=self.client.headers) 
+    return res.json()
+
+
+  # private API methods(POST)
+  def place_buy_order(self, size):
+    method = 'POST'
+    self.path = '/v1/order'
+    timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
+    reqBody = {
+      "symbol": 'USD_JPY',
+      "side": 'BUY',
+      "size": str(size),
+      "executionType": 'MARKET'
+    }
+
+
+    text = timestamp + method + self.path + json.dumps(reqBody)
+    sign = hmac.new(bytes(settings.secretKey.encode('ascii')), bytes(text.encode('ascii')), hashlib.sha256).hexdigest()
+    self.private_authorization_post(timestamp, sign)
+    
+    res = requests.post(self.endpoint + self.path, headers=self.client.headers, data=json.dumps(reqBody))
+    return res.json()
+
+
+  def place_sell_order(self, size):
+    method = 'POST'
+    self.path = '/v1/order'
+    timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
+    reqBody = {
+      "symbol": 'USD_JPY',
+      "side": 'SELL',
+      "size": str(size),
+      "executionType": 'MARKET'
+    }
+
+    text = timestamp + method + self.path + json.dumps(reqBody)
+    sign = hmac.new(bytes(settings.secretKey.encode('ascii')), bytes(text.encode('ascii')), hashlib.sha256).hexdigest()
+    self.private_authorization_post(timestamp, sign)
+
+    res = requests.post(self.endpoint + self.path, headers=self.client.headers, data=json.dumps(reqBody))
+    return res.json()
+
+  def close_order(self, position_id: int, size: int):
+      '''
+      {
+        "status": 0,
+        "data": [
+          {
+            "rootOrderId": 123456789,
+            "clientOrderId": "abc123",
+            "orderId": 123456789,
+            "symbol": "USD_JPY",
+            "side": "BUY",
+            "orderType": "NORMAL",
+            "executionType": "LIMIT",
+            "settleType": "CLOSE",
+            "size": "10000",
+            "price": "135.5",
+            "status": "WAITING",
+            "expiry": "20230418",
+            "timestamp": "2019-03-19T01:07:24.467Z"
+          }
+        ],
+        "responsetime": "2019-03-19T01:07:24.557Z"
+      }
+      '''
+      method = 'POST'
+      self.path = '/v1/closeOrder'
+      timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
+      reqBody = {
+        "symbol": 'USD_JPY',
+        "side": 'SELL',
+        "executionType": 'MARKET',
+        "settlePosition": {
+          "positionId": position_id,
+          "size": size
+        }
+      }
+
+      text = timestamp + method + self.path + json.dumps(reqBody)
+      sign = hmac.new(bytes(settings.secretKey.encode('ascii')), bytes(text.encode('ascii')), hashlib.sha256).hexdigest()
+      self.private_authorization_post(timestamp, sign)
+      res = requests.post(self.endpoint + self.path, headers=self.client.headers, data=json.dumps(reqBody))
+      return res.json()
+
+  def close_out(self):
+    pass
 
 
 class Ticker(object):
@@ -90,6 +222,10 @@ class Ticker(object):
       time_format = '%Y-%m-%d %H'
     elif duration == '1s':
       time_format = '%Y-%m-%d %H:%M:%S'
+    elif duration == '4h':
+      new_hour = math.floor(self.time.hour / 4) * 4
+      ticker_time = datetime(self.time.year, self.time.month, self.time.day, new_hour, 0)
+      time_format = '%Y-%m-%d %H'
 
     else:
       logger.warning("Unknown duration: {0}".format(duration))

@@ -1,3 +1,4 @@
 settings.ini
 *__pycache__*
-fx_trading.sqlite
+*.sqlite
+*.log

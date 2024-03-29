@@ -43,8 +43,10 @@ class Streamer():
     for duration in constants.DURATIONS:
       is_created = create_candle(ticker, duration)
       if is_created:
-        print("{} candle created".format(duration))
-        print("ticker", ticker.values)
+        pass
+        logger.info(f'action=on_message candle created | {duration} | {ticker.values}')
+        # print("{} candle created".format(duration))
+        # print("ticker", ticker.values)
 
 
   def run(self):
