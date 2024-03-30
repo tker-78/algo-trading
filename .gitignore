@@ -4,3 +4,4 @@ settings.ini
 *.log
 .venv
 .sample_code
+data/*
