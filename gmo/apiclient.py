@@ -83,6 +83,28 @@ class APIPrivate(APIPublic):
     return res.json()
 
   def get_open_positions(self):
+    '''
+    response: 
+    {
+      "status": 0,
+      "data": {
+        "list": [
+          {
+            "positionId": 123456789,
+            "symbol": "USD_JPY",
+            "side": "BUY",
+            "size": "10000",
+            "orderedSize": "0",
+            "price": "141.269",
+            "lossGain": "-1980",
+            "totalSwap":"0" ,
+            "timestamp": "2019-03-21T05:18:09.011Z"
+          }
+        ]
+      },
+      "responsetime": "2019-03-19T02:15:06.095Z"
+    }
+    '''
     self.path = '/v1/openPositions'
     self.private_authorization_get()
 

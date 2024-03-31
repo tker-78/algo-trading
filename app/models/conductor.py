@@ -1,4 +1,5 @@
 import math
+import time
 import pandas as pd
 import logging
 from app.models.dfcandle import DataframeCandle
@@ -176,24 +177,16 @@ class Conductor(object):
           return False
 
 
-
-
   def close_out(self):
     '''建玉がある場合は全ての建玉を決済する'''
     res = self.api_client.get_open_positions()
-    if len(res["data"]["list"]) > 0:
-        res_sell = self.api_client.place_sell_order(size=self.units)
 
-        self.balance += self.units * float(res_sell["data"]["list"][0]["price"])
-        self.units = 0
-        self.trades += 1
+    logger.info(f'action=close_out: closing out starting...')
+    while len(res["data"]["list"]) > 0:
+        self.close_position()
+        time.sleep(2) # APIアクセスが発生するので、待機時間を設ける
+    logger.info(f'action=close_out: finished')
 
-
-    # print('Final balance: ', self.balance)
-    # perf = ((self.balance - self.initial_balance) / self.initial_balance) * 100
-    # print('Net Performance [%]:', perf)
-    # print('Trades Executed [#]: {}'.format(self.trades))
-    # print('=' * 55)
 
   def check_spread(self):
     """許容できるスプレッド値か判定する"""
