@@ -10,4 +10,5 @@ tradeDuration = conf["gmo"]["duration"]
 
 dbName = conf["db1"]["db_name"]
 
+
 logFileName = conf["log"]["log_file"]
