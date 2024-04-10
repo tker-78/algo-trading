@@ -7,6 +7,7 @@ import mplfinance as mpf
 import numpy as np
 import settings
 import gmo.apiclient as api
+import constants
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +109,10 @@ class Conductor(object):
     equity = float(res["data"]["equity"])
     return equity
 
+  def get_position(self):
+     res = self.api_client.get_open_positions()
+     return res
+
   def place_buy_order(self, size=None) -> bool:
     '''新規の買い注文を発行する
     '''
@@ -154,18 +159,18 @@ class Conductor(object):
       '''建玉を決済する'''
       # 決済する建玉IDを取得する
       logger.info(f'action=close_position: get_execution() starting...')
-      res = self.api_client.get_execution(str(self.active_orders[0]))
-      logger.info(f'action=close_position: get_execution() finished | res={res}')
-      position_id = res["data"]["list"][0]["positionId"]
-      size = int(res["data"]["list"][0]["size"])
+      res_exe = self.api_client.get_execution(str(self.active_orders[0]))
+      logger.info(f'action=close_position: get_execution() finished | res_exe={res_exe}')
+      position_id = res_exe["data"]["list"][0]["positionId"]
+      size = str(res_exe["data"]["list"][0]["size"])
 
       logger.info(f'action=close_position: close_order() starting...')
       res_close = self.api_client.close_order(position_id, size)
-      logger.info(f'action=close_position: close_order() finished | res={res_close}')
+      logger.info(f'action=close_position: close_order() finished | res_close={res_close}')
 
       if res_close["data"][0]["status"] == 'EXECUTED':
           size = int(res_close["data"][0]["size"])
-          price = float(res_close["data"]["list"][0]["price"])
+          price = float(res_exe["data"]["list"][0]["price"])
           self.balance += size * price
           self.units -= size
           self.trades += 1
@@ -191,7 +196,7 @@ class Conductor(object):
   def check_spread(self):
     """許容できるスプレッド値か判定する"""
     current_spread = self.api_client.get_spread()
-    if current_spread < 0.4:
+    if current_spread < constants.ALLOWED_SPREAD:
       return True
     else:
       return False

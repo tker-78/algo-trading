@@ -34,10 +34,17 @@ if __name__ == '__main__':
                     break
 
                 logger.info(f'action=execute current conductor values | {cond.values}')
-                cond.get_data(5)
+                cond.get_data(5) # should be modified because it is hardcoded
                 print(cond.data.tail())
 
                 # execute momentum simulation
+                # 最初に建玉を持っているか確認する
+                open_positions = cond.get_position()
+                if len(open_positions["data"]["list"]) > 0:
+                    cond.active_orders.append(open_positions["data"]["list"][0]["orderId"])
+                    cond.units += int(open_positions["data"]["list"][0]["size"])
+                    cond.position = 1
+
                 logger.info(f'action=execute start checking to place orders | {cond.values} ')
                 latest_momentum = cond.data["momentum"].iloc[-1]
                 if latest_momentum > 0 and cond.position == 0 and cond.check_spread():
@@ -48,7 +55,7 @@ if __name__ == '__main__':
                     else:
                         logger.info(f'action=execute place buy order failed')
                 elif latest_momentum < 0 and cond.position == 1 and cond.check_spread():
-                    is_ok = cond.place_sell_order()
+                    is_ok = cond.close_position()
                     if is_ok:
                         logger.info(f'action=execute place sell order successful')
                     else:

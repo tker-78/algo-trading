@@ -2,6 +2,7 @@ import os
 
 
 DURATIONS = ["4h","1h", "1m", "1s", "5m"]
+ALLOWED_SPREAD = 1.0
 
 
 ROOT_PATH = os.path.dirname(__file__)

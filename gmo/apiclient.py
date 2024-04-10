@@ -35,11 +35,27 @@ class APIPrivate(APIPublic):
 
   # public API methods(GET)
   def get_spread(self, symbol="USD_JPY"):
+    """
+    response = 
+    {
+        "status": 0,
+        "data": [
+            {
+                "symbol": "USD_JPY",
+                "ask": "151.816",
+                "bid": "151.693",
+                "timestamp": "2024-04-09T20:23:59.921899Z",
+                "status": "OPEN"
+            }
+        ],
+        "responsetime": "2024-04-09T20:24:00.015Z"
+    }
+    
+    """
     endpoint = "https://forex-api.coin.z.com/public"
     path = '/v1/ticker'
     res = requests.get(endpoint + path)
-    js = res.json()
-    usd_jpy_ticker = js['data'][0]
+    usd_jpy_ticker = res['data'][0]
     ask = float(usd_jpy_ticker['ask'])
     bid = float(usd_jpy_ticker['bid'])
     truncated = math.floor((ask - bid) * 1000 ) / 10

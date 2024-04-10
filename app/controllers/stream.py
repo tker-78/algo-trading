@@ -1,10 +1,10 @@
 import websocket
+from websocket._app import WebSocketApp
 import json
 import logging
 import datetime
 from gmo.apiclient import Ticker
 from app.models.candle import create_candle
-from app.models.candle import UsdJpyBaseCandle1M
 from gmo.apiclient import Ticker
 import pytz
 import constants
@@ -52,7 +52,7 @@ class Streamer():
   def run(self):
     websocket.enableTrace(False)
     wsEndPoint = "wss://forex-api.coin.z.com/ws/public/v1"
-    self.ws = websocket.WebSocketApp(wsEndPoint)
+    self.ws = WebSocketApp(wsEndPoint)
     self.ws.on_message = self.on_message
     self.ws.on_open = self.on_open
     self.ws.run_forever()
