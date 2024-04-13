@@ -73,8 +73,8 @@ if __name__ == '__main__':
         print("streaming tick data...")
         streamer.run()
 
-    tpe = ThreadPoolExecutor(max_workers=2)
-    tpe.submit(stream)
+    # tpe = ThreadPoolExecutor(max_workers=2)
+    # tpe.submit(stream)
 
     # uncomment here if you want to run the execute function
     # tpe.submit(execute)

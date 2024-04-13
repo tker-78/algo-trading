@@ -65,7 +65,6 @@ class APIPrivate(APIPublic):
 
   # authorization
   def private_authorization_get(self):
-    # todo
     method = "GET"
     timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
     text = timestamp + method + self.path 
@@ -92,38 +91,20 @@ class APIPrivate(APIPublic):
   # private API methods(GET)
 
   def get_balance(self):
+    '''
+    {'status': 0, 'data': {'equity': '103465', 'availableAmount': '42252.6', 'balance': '100175', 'estimatedTradeFee': '0', 'margin': '61212.4', 'marginRatio': '169', 'positionLossGain': '3290', 'totalSwap': '0', 'transferableAmount': '38962'}, 'responsetime': '2024-04-10T20:13:11.611Z'}
+    '''
     self.path      = '/v1/account/assets'
     self.private_authorization_get()
-
     res = requests.get(self.endpoint + self.path, headers=self.client.headers)
     return res.json()
 
   def get_open_positions(self):
     '''
-    response: 
-    {
-      "status": 0,
-      "data": {
-        "list": [
-          {
-            "positionId": 123456789,
-            "symbol": "USD_JPY",
-            "side": "BUY",
-            "size": "10000",
-            "orderedSize": "0",
-            "price": "141.269",
-            "lossGain": "-1980",
-            "totalSwap":"0" ,
-            "timestamp": "2019-03-21T05:18:09.011Z"
-          }
-        ]
-      },
-      "responsetime": "2019-03-19T02:15:06.095Z"
-    }
+    {'status': 0, 'data': {'list': [{'lossGain': '3170', 'orderedSize': '0', 'positionId': 1698733, 'price': '152.577', 'side': 'BUY', 'size': '10000', 'symbol': 'USD_JPY', 'timestamp': '2024-04-10T13:42:07.707Z', 'totalSwap': '0'}]}, 'responsetime': '2024-04-10T20:03:16.617Z'}
     '''
     self.path = '/v1/openPositions'
     self.private_authorization_get()
-
     res = requests.get(self.endpoint + self.path, headers=self.client.headers)
     return res.json()
 
@@ -138,24 +119,26 @@ class APIPrivate(APIPublic):
     return res.json()
 
   def get_assets(self):
+    '''
+    {'status': 0, 'data': {'availableAmount': '42147.8', 'balance': '100175', 'equity': '103355', 'estimatedTradeFee': '0', 'margin': '61207.2', 'marginRatio': '168.8', 'positionLossGain': '3180', 'totalSwap': '0', 'transferableAmount': '38967'}, 'responsetime': '2024-04-10T20:20:16.936Z'}
+    '''
     self.path = '/v1/account/assets'
     self.private_authorization_get()
     res = requests.get(self.endpoint + self.path, headers=self.client.headers) 
     return res.json()
 
-
+  #=================================================#
   # private API methods(POST)
   def place_buy_order(self, size):
     method = 'POST'
     self.path = '/v1/order'
     timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
     reqBody = {
-      "symbol": 'USD_JPY',
+      "symbol": settings.tradeCurrency,
       "side": 'BUY',
       "size": str(size),
       "executionType": 'MARKET'
     }
-
 
     text = timestamp + method + self.path + json.dumps(reqBody)
     sign = hmac.new(bytes(settings.secretKey.encode('ascii')), bytes(text.encode('ascii')), hashlib.sha256).hexdigest()
@@ -170,7 +153,7 @@ class APIPrivate(APIPublic):
     self.path = '/v1/order'
     timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
     reqBody = {
-      "symbol": 'USD_JPY',
+      "symbol": settings.tradeCurrency,
       "side": 'SELL',
       "size": str(size),
       "executionType": 'MARKET'
@@ -183,8 +166,9 @@ class APIPrivate(APIPublic):
     res = requests.post(self.endpoint + self.path, headers=self.client.headers, data=json.dumps(reqBody))
     return res.json()
 
-  def close_order(self, position_id: int, size: int):
+  def close_order(self, position_id: int, size: str):
       '''
+      position_idを指定して決済する
       {
         "status": 0,
         "data": [
@@ -211,13 +195,15 @@ class APIPrivate(APIPublic):
       self.path = '/v1/closeOrder'
       timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
       reqBody = {
-        "symbol": 'USD_JPY',
+        "symbol": settings.tradeCurrency,
         "side": 'SELL',
         "executionType": 'MARKET',
-        "settlePosition": {
-          "positionId": position_id,
-          "size": size
-        }
+        "settlePosition": [
+            {
+              "positionId": position_id,
+              "size": size
+            }
+        ]
       }
 
       text = timestamp + method + self.path + json.dumps(reqBody)
@@ -227,7 +213,8 @@ class APIPrivate(APIPublic):
       return res.json()
 
   def close_out(self):
-    pass
+      # 全ての建玉を決済する
+      pass
 
 
 class Ticker(object):
