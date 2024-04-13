@@ -159,10 +159,11 @@ class Conductor(object):
       '''建玉を決済する'''
       # 決済する建玉IDを取得する
       logger.info(f'action=close_position: get_execution() starting...')
-      res_exe = self.api_client.get_execution(str(self.active_orders[0]))
-      logger.info(f'action=close_position: get_execution() finished | res_exe={res_exe}')
-      position_id = res_exe["data"]["list"][0]["positionId"]
-      size = str(res_exe["data"]["list"][0]["size"])
+      res = self.api_client.get_execution(str(self.active_orders[0]))
+      logger.info(f'action=close_position: get_execution() finished | res={res}')
+      position_id = int(res["data"]["list"][0]["positionId"])
+      size = str(res["data"]["list"][0]["size"])
+      logger.info(f'action=close_position: type of positionId={type(position_id)}, type of size={type(size)}')
 
       logger.info(f'action=close_position: close_order() starting...')
       res_close = self.api_client.close_order(position_id, size)
@@ -170,7 +171,7 @@ class Conductor(object):
 
       if res_close["data"][0]["status"] == 'EXECUTED':
           size = int(res_close["data"][0]["size"])
-          price = float(res_exe["data"]["list"][0]["price"])
+          price = float(res["data"]["list"][0]["price"])
           self.balance += size * price
           self.units -= size
           self.trades += 1

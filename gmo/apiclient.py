@@ -127,7 +127,43 @@ class APIPrivate(APIPublic):
     res = requests.get(self.endpoint + self.path, headers=self.client.headers) 
     return res.json()
 
-  #=================================================#
+  def get_latest_executions(self):
+    '''
+    {
+      "status": 0,
+      "data": {
+        "list": [
+          {
+            "amount":"16215.999",
+            "executionId": 92123912,
+            "clientOrderId": "ccccc",
+            "orderId": 223456789,
+            "positionId": 2234567,
+            "symbol": "USD_JPY",
+            "side": "SELL",
+            "settleType": "CLOSE",
+            "size": "10000",
+            "price": "141.251",
+            "lossGain": "15730",
+            "fee": "-30",
+            "settledSwap":"515.999",
+            "timestamp": "2020-11-24T21:27:04.764Z"
+          }
+        ]
+      },
+      "responsetime": "2019-03-19T02:15:06.086Z"
+    }
+    '''
+    self.path = '/v1/latestExecutions'
+    parameters = {
+      'symbol': 'USD_JPY',
+      'count': 10
+    }
+    self.private_authorization_get()
+    res = requests.get(self.endpoint + self.path, headers=self.client.headers, params=parameters)
+    return res.json()
+
+
   # private API methods(POST)
   def place_buy_order(self, size):
     method = 'POST'
