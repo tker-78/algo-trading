@@ -1,5 +1,4 @@
 from app.models.candle import BaseCandleMixin
-import talib
 import numpy as np
 from app.models.candle import factory_base_candle
 from datetime import datetime

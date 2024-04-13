@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from gmo.apiclient import APIPrivate
 from app.controllers.stream import Streamer
 from app.models.conductor import Conductor
+import constants
 
 
 # class SampleClass(object):
@@ -25,6 +26,13 @@ if __name__ == '__main__':
 
     # 実行すると実際に約定するので注意!
     def execute():
+        # 起動時に建玉を持っていれば、それをcondに反映する
+        open_positions = cond.get_position()
+        if len(open_positions["data"]["list"]) > 0:
+            order_id = cond.api_client.get_latest_executions()["data"]["list"][0]["orderId"]
+            cond.active_orders.append(int(order_id))
+            cond.units += int(open_positions["data"]["list"][0]["size"])
+            cond.position = 1
         try:
             while True:
                 if cond.get_equity() < cond.initial_balance * 0.9:
@@ -38,6 +46,13 @@ if __name__ == '__main__':
                 print(cond.data.tail())
 
                 # execute momentum simulation
+
+                # 手動で決済した場合に、condに反映する
+                if len(cond.get_position()["data"]["list"]) == 0:
+                    cond.active_orders = []
+                    cond.units = 0
+                    cond.position = 0
+
                 logger.info(f'action=execute start checking to place orders | {cond.values} ')
                 latest_momentum = cond.data["momentum"].iloc[-1]
                 if latest_momentum > 0 and cond.position == 0 and cond.check_spread():
@@ -48,18 +63,16 @@ if __name__ == '__main__':
                     else:
                         logger.info(f'action=execute place buy order failed')
                 elif latest_momentum < 0 and cond.position == 1 and cond.check_spread():
-                    is_ok = cond.place_sell_order()
+                    is_ok = cond.close_position()
                     if is_ok:
                         logger.info(f'action=execute place sell order successful')
                     else:
                         logger.info(f'action=execute place sell order failed')
 
-                time.sleep(5)
+                time.sleep(constants.SLEEP_TIME[settings.tradeDuration])
         except Exception as e:
             logger.error(f'action=execute error | {e}')
 
-        finally:
-            logger.info(f'action=execute exit | {cond.values}')
 
     def stream():
         streamer = Streamer()
@@ -67,7 +80,8 @@ if __name__ == '__main__':
         streamer.run()
 
     tpe = ThreadPoolExecutor(max_workers=2)
-    tpe.submit(stream)
+    # tpe.submit(stream)
 
     # uncomment here if you want to run the execute function
-    # tpe.submit(execute)
+    tpe.submit(execute)
+

@@ -1,4 +1,5 @@
 import websocket
+from websocket._app import WebSocketApp
 import json
 import logging
 import datetime
@@ -13,12 +14,14 @@ logger = logging.getLogger(__name__)
 
 class Streamer():
   def on_open(self, ws, option={}):
+    logging.info('action=websocket on_open starting...')
     message = {
       "command": "subscribe",
       "channel": "ticker",
       "symbol": "USD_JPY"
     }
     ws.send(json.dumps(message))
+    logging.info('action=websocket on_open finished.')
 
   def on_message(self, message, ws):
     data = json.loads(ws)
@@ -43,16 +46,29 @@ class Streamer():
     for duration in constants.DURATIONS:
       is_created = create_candle(ticker, duration)
       if is_created:
-        pass
         logger.info(f'action=on_message candle created | {duration} | {ticker.values}')
-        # print("{} candle created".format(duration))
-        # print("ticker", ticker.values)
+        print("{} candle created".format(duration))
+        print("ticker", ticker.values)
 
 
   def run(self):
+    print('websocket starting...')
+    logging.info('action=websocket starting...')
     websocket.enableTrace(False)
     wsEndPoint = "wss://forex-api.coin.z.com/ws/public/v1"
-    self.ws = websocket.WebSocketApp(wsEndPoint)
-    self.ws.on_message = self.on_message
-    self.ws.on_open = self.on_open
-    self.ws.run_forever()
+    try:
+      self.ws = websocket.WebSocketApp(wsEndPoint)
+    except Exception as e:
+      logger.info(f'error: {e}')
+
+    logger.info(f'ws: {self.ws}')
+
+    try:
+      self.ws.on_message = self.on_message
+      self.ws.on_open = self.on_open
+      self.ws.run_forever()
+    except Exception as e:
+      logger.info(f'error: {e}')
+
+    print("websocket finished.")
+    logging.info('action=websocket finished.')
