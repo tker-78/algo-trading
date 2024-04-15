@@ -49,18 +49,17 @@ class Streamer():
         print("{} candle created".format(duration))
         print("ticker", ticker.values)
 
+    if ticker.time.minute == 55 and ticker.time.hour == 6:
+      self.ws.close()
+      print(f'websocket closed | {ticker.time}')
+      logger.info(f'action=on_message websocket closed | {ticker.time}')
+
 
   def run(self):
     print('websocket starting...')
     logging.info('action=websocket starting...')
     websocket.enableTrace(False)
     wsEndPoint = "wss://forex-api.coin.z.com/ws/public/v1"
-<<<<<<< HEAD
-    self.ws = WebSocketApp(wsEndPoint)
-    self.ws.on_message = self.on_message
-    self.ws.on_open = self.on_open
-    self.ws.run_forever()
-=======
     try:
       self.ws = websocket.WebSocketApp(wsEndPoint)
     except Exception as e:
@@ -77,4 +76,3 @@ class Streamer():
 
     print("websocket finished.")
     logging.info('action=websocket finished.')
->>>>>>> 18845007eb578506aa8fc96e0f77e6f85597341c

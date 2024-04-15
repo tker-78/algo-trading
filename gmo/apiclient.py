@@ -55,7 +55,8 @@ class APIPrivate(APIPublic):
     endpoint = "https://forex-api.coin.z.com/public"
     path = '/v1/ticker'
     res = requests.get(endpoint + path)
-    usd_jpy_ticker = res['data'][0]
+    response = res.json()
+    usd_jpy_ticker = response['data'][0]
     ask = float(usd_jpy_ticker['ask'])
     bid = float(usd_jpy_ticker['bid'])
     truncated = math.floor((ask - bid) * 1000 ) / 10
@@ -108,13 +109,13 @@ class APIPrivate(APIPublic):
     res = requests.get(self.endpoint + self.path, headers=self.client.headers)
     return res.json()
 
-  def get_execution(self, order_id: str):
+  def get_execution(self, order_id: int):
     '''
     response: {'status': 0, 'data': {'list': [{'amount': '0', 'executionId': 3368298, 'fee': '0', 'lossGain': '0', 'orderId': 4015908, 'positionId': 1640914, 'price': '151.365', 'settleType': 'OPEN', 'settledSwap': '0', 'side': 'BUY', 'size': '10000', 'symbol': 'USD_JPY', 'timestamp': '2024-03-29T08:21:25.985Z'}]}, 'responsetime': '2024-03-29T08:28:07.791Z'}
     '''
     self.path = '/v1/executions'
     self.private_authorization_get()
-    params = {'orderId': str(order_id)}
+    params = {'orderId': int(order_id)}
     res = requests.get(self.endpoint + self.path, headers=self.client.headers, params=params )
     return res.json()
 
