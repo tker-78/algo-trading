@@ -9,7 +9,8 @@ if __name__ == '__main__':
     streamer = stream.Streamer()
     print("streaming tick data...")
     logger.info('action=stream starting...')
-    # streamer.run()
+
+    streamer.run()
 
     open_job = schedule.every().day.at("07:00", "Asia/Tokyo").do(streamer.run)
 
