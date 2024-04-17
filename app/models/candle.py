@@ -68,6 +68,30 @@ class BaseCandleMixin(object):
     
     return candles
 
+  @classmethod
+  def delete_invalid_candles(cls):
+    print('delete invalid candles...')
+    now = datetime.datetime.now()
+    current_date = datetime.datetime(now.year, now.month, now.day, 0, 0, 0)
+    date_diff_from_saturday = (current_date.weekday() + 2) % 7
+    date_diff_from_monday = date_diff_from_saturday - 2 
+    start_time = current_date - datetime.timedelta(days=date_diff_from_saturday) + datetime.timedelta(hours=6)
+    end_time = current_date - datetime.timedelta(days=date_diff_from_monday) + datetime.timedelta(hours=7)
+    print(f'start_time: {start_time}, end_time: {end_time}')
+
+    with session_scope() as session:
+      candles = session.query(cls).filter(cls.time >= start_time).filter(cls.time < end_time).all()
+
+    if candles is None:
+      return None
+    
+    for candle in candles:
+      print(candle.value)
+      session.delete(candle)
+      session.commit()
+
+    print('finished delete invalid candles.')
+
   @property
   def value(self):
     return {

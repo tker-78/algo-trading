@@ -55,7 +55,8 @@ class APIPrivate(APIPublic):
     endpoint = "https://forex-api.coin.z.com/public"
     path = '/v1/ticker'
     res = requests.get(endpoint + path)
-    usd_jpy_ticker = res['data'][0]
+    response = res.json()
+    usd_jpy_ticker = response['data'][0]
     ask = float(usd_jpy_ticker['ask'])
     bid = float(usd_jpy_ticker['bid'])
     truncated = math.floor((ask - bid) * 1000 ) / 10

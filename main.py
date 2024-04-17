@@ -9,6 +9,8 @@ from gmo.apiclient import APIPrivate
 from app.controllers.stream import Streamer
 from app.models.conductor import Conductor
 import constants
+from app.models.candle import UsdJpyBaseCandle1M
+from app.models.candle import factory_base_candle
 
 
 # class SampleClass(object):
@@ -26,6 +28,16 @@ if __name__ == '__main__':
 
     # 実行すると実際に約定するので注意!
     def execute():
+        # 取引時間外のデータをデータベースから削除する
+        for duration in constants.DURATIONS:
+            print('delete invalid candles...')
+            logger.info(f'delete invalid candles... {duration}')
+            cls = factory_base_candle(duration)
+            cls.delete_invalid_candles()
+        print('finished delete invalid candles.')
+        logger.info('finished delete invalid candles.')
+
+
         # 起動時に建玉を持っていれば、それをcondに反映する
         open_positions = cond.get_position()
         if len(open_positions["data"]["list"]) > 0:
@@ -35,6 +47,7 @@ if __name__ == '__main__':
             cond.position = 1
         try:
             while True:
+                # 自動トレードを終了する条件
                 if cond.get_equity() < cond.initial_balance * 0.9:
                     logger.info(f'action=execute close_out started | {cond.values}')
                     cond.close_out()
@@ -46,7 +59,6 @@ if __name__ == '__main__':
                 print(cond.data.tail())
 
                 # execute momentum simulation
-
                 # 手動で決済した場合に、condに反映する
                 if len(cond.get_position()["data"]["list"]) == 0:
                     cond.active_orders = []
@@ -79,9 +91,14 @@ if __name__ == '__main__':
         print("streaming tick data...")
         streamer.run()
 
-    tpe = ThreadPoolExecutor(max_workers=2)
+    # tpe = ThreadPoolExecutor(max_workers=2)
     # tpe.submit(stream)
 
     # uncomment here if you want to run the execute function
-    tpe.submit(execute)
+    # tpe.submit(execute)
+
+
+
+
+
 

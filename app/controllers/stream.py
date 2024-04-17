@@ -8,6 +8,7 @@ from app.models.candle import create_candle
 from gmo.apiclient import Ticker
 import pytz
 import constants
+import schedule
 
 logger = logging.getLogger(__name__)
 
@@ -49,18 +50,15 @@ class Streamer():
         print("{} candle created".format(duration))
         print("ticker", ticker.values)
 
+    if ticker.time.minute == 55 and ticker.time.hour == 23:
+      self.ws.close()
+
 
   def run(self):
     print('websocket starting...')
     logging.info('action=websocket starting...')
     websocket.enableTrace(False)
     wsEndPoint = "wss://forex-api.coin.z.com/ws/public/v1"
-<<<<<<< HEAD
-    self.ws = WebSocketApp(wsEndPoint)
-    self.ws.on_message = self.on_message
-    self.ws.on_open = self.on_open
-    self.ws.run_forever()
-=======
     try:
       self.ws = websocket.WebSocketApp(wsEndPoint)
     except Exception as e:
@@ -77,4 +75,8 @@ class Streamer():
 
     print("websocket finished.")
     logging.info('action=websocket finished.')
->>>>>>> 18845007eb578506aa8fc96e0f77e6f85597341c
+
+  def close_websocket(self):
+    print('websocket closing...')
+    logger.info('action=websocket closing...')
+    self.ws.close()
