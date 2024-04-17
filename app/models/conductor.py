@@ -109,9 +109,7 @@ class Conductor(object):
     equity = float(res["data"]["equity"])
     return equity
 
-  def get_position(self):
-     res = self.api_client.get_open_positions()
-     return res
+
 
   def place_buy_order(self, size=None) -> bool:
     '''新規の買い注文を発行する
@@ -124,12 +122,13 @@ class Conductor(object):
     print("buy_order:", res)
     if res["data"][0]["status"] == 'EXECUTED':
         execution = self.api_client.get_execution(str(res["data"][0]["orderId"]))
+        # position = self.api_client.get_open_positions()
         price = float(execution["data"]["list"][0]["price"])
         self.balance -= size * price
         self.units += size 
         self.trades += 1
         self.position = 1
-        self.active_orders.append(res["data"][0]["orderId"])
+        self.active_orders.append(execution["data"]["list"][0]["positionId"])
         return True
     return False
 
@@ -143,14 +142,14 @@ class Conductor(object):
     if res["data"][0]["status"] == 'EXECUTED':
         size = int(res["data"][0]["size"])
         logger.info(f'action=place_sell_order: get_execution() starting...')
-        execution = self.api_client.get_execution(str(res["data"][0]["orderId"]))
+        execution = self.api_client.get_execution(str(res["data"][0]["positionId"]))
         logger.info(f'action=place_sell_order: api_client.get_execution() finished | res={execution}')
         price = float(execution["data"]["list"][0]["price"])
         self.balance += size * price
         self.units = 0
         self.trades += 1
         self.position = 0
-        self.active_orders.append(res["data"][0]["orderId"])
+        self.active_orders.append(res["data"][0]["positionId"])
         return True
     else:
         return False
@@ -159,11 +158,10 @@ class Conductor(object):
       '''建玉を決済する'''
       # 決済する建玉IDを取得する
       logger.info(f'action=close_position: get_execution() starting...')
-      res = self.api_client.get_execution(str(self.active_orders[0]))
+      res = self.api_client.get_open_positions()
       logger.info(f'action=close_position: get_execution() finished | res={res}')
-      position_id = int(res["data"]["list"][0]["positionId"])
+      position_id = self.active_orders[0]
       size = str(res["data"]["list"][0]["size"])
-      logger.info(f'action=close_position: type of positionId={type(position_id)}, type of size={type(size)}')
 
       logger.info(f'action=close_position: close_order() starting...')
       res_close = self.api_client.close_order(position_id, size)
@@ -201,6 +199,15 @@ class Conductor(object):
       return True
     else:
       return False
+
+  def get_open_position(self):
+      '''建玉を持っていれば、それをconductorに反映する'''
+      open_positions = self.api_client.get_open_positions()
+      if len(open_positions["data"]["list"]) > 0:
+          position_id = self.api_client.get_open_positions()["data"]["list"][0]["positionId"]
+          self.active_orders.append(int(position_id))
+          self.units += int(open_positions["data"]["list"][0]["size"])
+          self.position = 1
 
   @property
   def values(self):

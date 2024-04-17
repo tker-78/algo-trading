@@ -50,8 +50,10 @@ class Streamer():
         print("{} candle created".format(duration))
         print("ticker", ticker.values)
 
-    if ticker.time.minute == 55 and ticker.time.hour == 23:
+    if ticker.time.minute == 55 and ticker.time.hour == 6:
       self.ws.close()
+      print(f'websocket closed | {ticker.time}')
+      logger.info(f'action=on_message websocket closed | {ticker.time}')
 
 
   def run(self):
@@ -75,8 +77,3 @@ class Streamer():
 
     print("websocket finished.")
     logging.info('action=websocket finished.')
-
-  def close_websocket(self):
-    print('websocket closing...')
-    logger.info('action=websocket closing...')
-    self.ws.close()
