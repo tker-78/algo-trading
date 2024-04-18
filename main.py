@@ -104,9 +104,4 @@ if __name__ == '__main__':
 
     # uncomment here if you want to run the execute function
     # tpe.submit(execute)
-
-
-
-
-
-
+    
