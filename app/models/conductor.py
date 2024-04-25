@@ -106,7 +106,13 @@ class Conductor(object):
     '''現在の評価額を取得する
     '''
     res = self.api_client.get_assets()
-    equity = float(res["data"]["equity"])
+    equity = None
+
+    try:
+        equity = float(res["data"]["equity"])
+    except KeyError as e:
+        logger.error("KeyError, {e} is not found")
+
     return equity
 
 
