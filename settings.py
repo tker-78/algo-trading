@@ -13,3 +13,4 @@ dbName = conf["db1"]["db_name"]
 
 
 logFileName = conf["log"]["log_file"]
+logFileNameStream = conf["log"]["log_file_stream"]
