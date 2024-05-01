@@ -2,6 +2,7 @@ from app.models.candle import BaseCandleMixin
 import numpy as np
 from app.models.candle import factory_base_candle
 from datetime import datetime
+import settings
 
 
 class DataframeCandle(object):
@@ -11,7 +12,7 @@ class DataframeCandle(object):
 
   def __init__(self, duration: str):
     self.duration = duration
-    self.candle_cls = factory_base_candle(duration)
+    self.candle_cls = factory_base_candle(settings.tradeCurrency, duration)
     self.candles = []
 
   def set_all_candles(self, limit: int = 100) -> list:

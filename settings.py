@@ -8,6 +8,7 @@ apiKey = conf["gmo"]["api_key"]
 secretKey = conf["gmo"]["secret_key"]
 tradeDuration = conf["gmo"]["duration"]
 tradeCurrency = conf["gmo"]["currency"]
+tradeMomentum = conf["gmo"]["trade_momentum"]
 
 dbName = conf["db1"]["db_name"]
 

@@ -19,9 +19,9 @@ if __name__ == '__main__':
 
         # 取引時間外のデータをデータベースから削除する
         for duration in constants.DURATIONS:
-            print('delete invalid candles...')
-            logger.info(f'delete invalid candles... {duration}')
-            cls = factory_base_candle(duration)
+            print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+            logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+            cls = factory_base_candle(settings.tradeCurrency, duration)
             cls.delete_invalid_candles()
         print('delete invalid candles finished.')
         logger.info('delete invalid candles finished.')
@@ -29,8 +29,8 @@ if __name__ == '__main__':
 
         # 起動時に建玉を持っていれば、それをcondに反映する
         # positionIdを使用する
-        print("get position")
-        logger.info("get position")
+        print("getting current position...")
+        logger.info("getting current position...")
         try:
             cond.get_open_position()
         except Exception as e:
@@ -42,27 +42,30 @@ if __name__ == '__main__':
 
         while True:
             # 自動トレード終了の条件を指定
-            try: 
-                equity = cond.get_equity()
-                if equity < cond.initial_balance * 0.8:
-                    print(f'action=execute close_out started') 
-                    logger.info(f'action=execute close_out started')
+            # try: 
+            #     equity = cond.get_equity()
+            #     if equity < cond.initial_balance * 0.8:
+            #         print(f'action=execute close_out started') 
+            #         logger.info(f'action=execute close_out started')
 
-                    cond.close_out()
+            #         cond.close_out()
 
-                    print(f'action=execute close_out finished')
-                    logger.info(f'action=execute close_out finished')
+            #         print(f'action=execute close_out finished')
+            #         logger.info(f'action=execute close_out finished')
 
-                    break
-            except Exception as e:
-                print(f'error: {e}')
-                logger.info(f'error: {e}')
+            #         break
+            # except Exception as e:
+            #     print(f'error: {e}')
+            #     logger.info(f'error: {e}')
 
             # momentumを指定してデータを生成する
-            cond.get_data(5) 
+            cond.get_data(int(settings.tradeMomentum))
 
-            print(cond.data.tail())
-            logger.info(cond.data.tail())
+            print(f'cond.values: {cond.values}')
+            logger.info(f'cond.values: {cond.values}')
+
+            print(cond.data.tail(6))
+            logger.info(cond.data.tail(6))
 
 
             # 手動で決済した場合に、condに反映する
@@ -81,7 +84,8 @@ if __name__ == '__main__':
             logger.info(f'action=execute start checking to place orders | {cond.values} ')
             latest_momentum = cond.data["momentum"].iloc[-1]
 
-            if latest_momentum > constants.BUY_MOMENTUM and cond.position == 0 and cond.check_spread():
+            if latest_momentum > constants.BUY_MOMENTUM_LOWER and latest_momentum < constants.BUY_MOMENTUM_UPPER and cond.position == 0:
+                # スプレッドの制限が必要であれば、cond.check_spread()を購入条件に追加する
                 logger.info(f'action=execute place buy order | {cond.values}')
                 is_ok = cond.place_buy_order()
                 if is_ok:
