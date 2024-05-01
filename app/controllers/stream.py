@@ -9,10 +9,13 @@ from gmo.apiclient import Ticker
 import pytz
 import constants
 import schedule
+import settings
 
 logger = logging.getLogger(__name__)
 
 class Streamer():
+  def __init__(self, currency):
+    self.currency = currency
   def on_open(self, ws, option={}):
     """
     This method is called when the websocket connection is established.
@@ -34,7 +37,7 @@ class Streamer():
     message = {
       "command": "subscribe",
       "channel": "ticker",
-      "symbol": "USD_JPY"
+      "symbol": self.currency 
     }
     ws.send(json.dumps(message))
     logging.info('action=websocket on_open finished.')
@@ -75,11 +78,11 @@ class Streamer():
     ticker.bid = float(data["bid"])
 
     for duration in constants.DURATIONS:
-      is_created = create_candle(ticker, duration)
-      if is_created:
-        logger.info(f'action=on_message candle created | {duration} | {ticker.values}')
-        print("{} candle created".format(duration))
-        print("ticker", ticker.values)
+      create_candle(ticker, duration, self.currency)
+      # if is_created:
+      #   logger.info(f'action=on_message candle created | {duration} | {ticker.values}')
+      #   print("{} candle created".format(duration))
+      #   print("ticker", ticker.values)
 
     if ticker.time.minute == 59:
       self.ws.close()

@@ -70,9 +70,6 @@ class BaseCandleMixin(object):
 
   @classmethod
   def delete_invalid_candles(cls):
-    print('deleting invalid candles...')
-    logger.info('deleting invalid candles...')
-
     now = datetime.datetime.now()
     current_date = datetime.datetime(now.year, now.month, now.day, 0, 0, 0)
     date_diff_from_saturday = (current_date.weekday() + 2) % 7
@@ -90,10 +87,6 @@ class BaseCandleMixin(object):
       session.delete(candle)
       session.commit()
 
-    print('finished delete invalid candles.')
-    logger.info('finished delete invalid candles.')
-
-    
 
   @property
   def value(self):
@@ -119,22 +112,42 @@ class UsdJpyBaseCandle1M(BaseCandleMixin, Base):
 class UsdJpyBaseCandle1s(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_1S'
 
-def factory_base_candle(duration) -> BaseCandleMixin:
-  if duration == '4h':
+class GbpJpyBaseCandle4H(BaseCandleMixin, Base):
+  __tablename__ = 'GBP_JPY_4H'
+
+class GbpJpyBaseCandle1H(BaseCandleMixin, Base):
+  __tablename__ = 'GBP_JPY_1H'
+
+class GbpJpyBaseCandle5M(BaseCandleMixin, Base):
+  __tablename__ = 'GBP_JPY_5M'
+
+class GbpJpyBaseCandle1M(BaseCandleMixin, Base):
+  __tablename__ = 'GBP_JPY_1M'
+
+def factory_base_candle(currency, duration) -> BaseCandleMixin:
+  if currency == "USD_JPY" and duration == '4h':
     return UsdJpyBaseCandle4H
-  elif duration == '1h':
+  elif currency == "USD_JPY" and duration == '1h':
     return UsdJpyBaseCandle1H
-  elif duration == '1m':
+  elif currency == "USD_JPY" and duration == '1m':
     return UsdJpyBaseCandle1M
-  elif duration == '5m':
+  elif currency == "USD_JPY" and duration == '5m':
     return UsdJpyBaseCandle5M
-  elif duration == '1s':
+  elif currency == "USD_JPY" and duration == '1s':
     return UsdJpyBaseCandle1s
+  elif currency == "GBP_JPY" and duration == '4h':
+    return GbpJpyBaseCandle4H
+  elif currency == "GBP_JPY" and duration == '1h':
+    return GbpJpyBaseCandle1H
+  elif currency == "GBP_JPY" and duration == '1m':
+    return GbpJpyBaseCandle1M
+  elif currency == "GBP_JPY" and duration == '5m':
+    return GbpJpyBaseCandle5M
   else:
     return None
 
-def create_candle(ticker: Ticker, duration) -> bool:
-  cls = factory_base_candle(duration)
+def create_candle(ticker: Ticker, duration, currency) -> bool:
+  cls = factory_base_candle(currency, duration)
   ticker_time = ticker.truncate_date_time(duration)
   current_candle = cls.get(ticker_time)
   price = ticker.mid_price

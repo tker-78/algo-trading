@@ -8,14 +8,14 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, filename=settings.logFileNameStream, format='%(asctime)s - %(name)s - %(levelname)s -%(message)s')
 
 if __name__ == '__main__':
-    streamer = stream.Streamer()
-    print("streaming tick data...")
-    logger.info('action=stream starting...')
+    streamer_usd = stream.Streamer("USD_JPY")
+    print(f"streaming tick data {streamer_usd.currency}...")
+    logger.info(f'action=stream starting... {streamer_usd.currency}...')
 
-    streamer.run()
+    streamer_usd.run()
 
-    # open_job = schedule.every().day.at("07:00", "Asia/Tokyo").do(streamer.run)
-    open_job = schedule.every().hour.at(":00", "Asia/Tokyo").do(streamer.run)
+
+    open_job1 = schedule.every().hour.at(":01", "Asia/Tokyo").do(streamer_usd.run)
 
 
     while True:
