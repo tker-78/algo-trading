@@ -18,13 +18,13 @@ if __name__ == '__main__':
     def execute():
 
         # 取引時間外のデータをデータベースから削除する
-        for duration in constants.DURATIONS:
-            print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
-            logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
-            cls = factory_base_candle(settings.tradeCurrency, duration)
-            cls.delete_invalid_candles()
-        print('delete invalid candles finished.')
-        logger.info('delete invalid candles finished.')
+        # for duration in constants.DURATIONS:
+        #     print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+        #     logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+        #     cls = factory_base_candle(settings.tradeCurrency, duration)
+        #     cls.delete_invalid_candles()
+        # print('delete invalid candles finished.')
+        # logger.info('delete invalid candles finished.')
 
 
         # 起動時に建玉を持っていれば、それをcondに反映する
@@ -57,6 +57,14 @@ if __name__ == '__main__':
             # except Exception as e:
             #     print(f'error: {e}')
             #     logger.info(f'error: {e}')
+            for duration in constants.DURATIONS:
+                print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+                logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+                cls = factory_base_candle(settings.tradeCurrency, duration)
+                cls.delete_invalid_candles()
+            print('delete invalid candles finished.')
+            logger.info('delete invalid candles finished.')
+
 
             # momentumを指定してデータを生成する
             cond.get_data(int(settings.tradeMomentum))
@@ -82,9 +90,10 @@ if __name__ == '__main__':
 
             # シミュレーションを実行する
             logger.info(f'action=execute start checking to place orders | {cond.values} ')
+            last_momentum = cond.data["momentum"].iloc[-2]
             latest_momentum = cond.data["momentum"].iloc[-1]
 
-            if latest_momentum > constants.BUY_MOMENTUM_LOWER and latest_momentum < constants.BUY_MOMENTUM_UPPER and cond.position == 0:
+            if last_momentum > constants.BUY_MOMENTUM_LOWER and cond.position == 0 and cond.check_spread():
                 # スプレッドの制限が必要であれば、cond.check_spread()を購入条件に追加する
                 logger.info(f'action=execute place buy order | {cond.values}')
                 is_ok = cond.place_buy_order()
@@ -92,14 +101,25 @@ if __name__ == '__main__':
                     logger.info(f'action=execute place buy order successful')
                 else:
                     logger.info(f'action=execute place buy order failed')
-            elif latest_momentum < constants.SELL_MOMENTUM and cond.position == 1:
+            elif last_momentum < constants.SELL_MOMENTUM and cond.position == 1:
                 is_ok = cond.close_position()
                 if is_ok:
                     logger.info(f'action=execute place sell order successful')
                 else:
                     logger.info(f'action=execute place sell order failed')
+            elif latest_momentum < constants.LOSSCUT_MOMENTUM and cond.position == 1:
+                is_ok = cond.close_position()
+                if is_ok:
+                    logger.info(f'action=execute losscut executed.')
+                    # ロスカットした場合は、一定時間取引を凍結する。
+                    print(f'snoozing the trade for {cond.duration}')
+                    logger.info(f'snoozing the trade for {cond.duration}')
+                    time.sleep(constants.LOSS_CUT_SLEEP_TIME[cond.duration])
+                else:
+                    logger.info(f'action=execute losscut failed.')
 
-            time.sleep(constants.SLEEP_TIME[settings.tradeDuration])
+
+            time.sleep(constants.SLEEP_TIME[cond.duration])
 
 
 
