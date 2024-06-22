@@ -121,8 +121,10 @@ class Conductor(object):
     '''新規の買い注文を発行する
     '''
     if size is None:
-        # size = int(math.floor(bulk_size / 10000)) * 10000
-        size = 10000
+        # 資産100,000円毎に10,000枚を購入量を設定する
+        equity = self.get_equity()
+        size = int(math.floor(equity / 100000)) * 10000
+        
     res = self.api_client.place_buy_order(size)
     # {'status': 0, 'data': [{'executionType': 'MARKET', 'orderId': 4015908, 'orderType': 'NORMAL', 'rootOrderId': 4015908, 'settleType': 'OPEN', 'side': 'BUY', 'size': '10000', 'status': 'EXECUTED', 'symbol': 'USD_JPY', 'timestamp': '2024-03-29T08:21:25.984Z'}], 'responsetime': '2024-03-29T08:21:26.245Z'}
     print("buy_order:", res)
