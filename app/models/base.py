@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
-engine = create_engine(f'sqlite:///{settings.dbName}.sqlite?check_same_thread=False')
+engine = create_engine(f'sqlite:///{settings.dbName}.sqlite?check_same_thread=False', pool_pre_ping=True)
 Session = scoped_session(sessionmaker(bind=engine))
 lock = threading.Lock()
 

@@ -20,13 +20,13 @@ if __name__ == '__main__':
     def execute():
 
         # 取引時間外のデータをデータベースから削除する
-        # for duration in constants.DURATIONS:
-        #     print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
-        #     logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
-        #     cls = factory_base_candle(settings.tradeCurrency, duration)
-        #     cls.delete_invalid_candles()
-        # print('delete invalid candles finished.')
-        # logger.info('delete invalid candles finished.')
+        for duration in constants.DURATIONS:
+            print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+            logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+            cls = factory_base_candle(settings.tradeCurrency, duration)
+            cls.delete_invalid_candles()
+        print('delete invalid candles finished.')
+        logger.info('delete invalid candles finished.')
 
 
         # 起動時に建玉を持っていれば、それをcondに反映する
@@ -59,13 +59,21 @@ if __name__ == '__main__':
             # except Exception as e:
             #     print(f'error: {e}')
             #     logger.info(f'error: {e}')
-            for duration in constants.DURATIONS:
-                print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
-                logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
-                cls = factory_base_candle(settings.tradeCurrency, duration)
-                cls.delete_invalid_candles()
-            print('delete invalid candles finished.')
-            logger.info('delete invalid candles finished.')
+
+
+            ### delete invalid candles###
+            # for duration in constants.DURATIONS:
+            #     print(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+            #     logger.info(f'delete invalid candles... {settings.tradeCurrency}_{duration}')
+            #     cls = factory_base_candle(settings.tradeCurrency, duration)
+            #     cls.delete_invalid_candles()
+            #     cls.delete_old_candles()
+            # print('delete invalid candles finished.')
+            # print('delete old candles finished.')
+            # logger.info('delete invalid candles finished.')
+            # logger.info('delete old candles finished.')
+
+            ##############################
 
 
             # momentumを指定してデータを生成する

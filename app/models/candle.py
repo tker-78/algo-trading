@@ -87,6 +87,23 @@ class BaseCandleMixin(object):
       session.delete(candle)
       session.commit()
 
+  @classmethod
+  def delete_old_candles(cls):
+    """
+    2週間よりも古いデータは削除する
+    """
+    now = datetime.datetime.now()
+    start = now - datetime.timedelta(days=14)
+    with session_scope() as session:
+      candles = session.query(cls).filter(cls.time < start).all()
+
+    if candles is None:
+      return None
+
+    for candle in candles:
+      session.delete(candle)
+      session.commit()
+
 
   @property
   def value(self):
