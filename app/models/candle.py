@@ -87,6 +87,23 @@ class BaseCandleMixin(object):
       session.delete(candle)
       session.commit()
 
+  @classmethod
+  def delete_old_candles(cls):
+    """
+    2週間よりも古いデータは削除する
+    """
+    now = datetime.datetime.now()
+    start = now - datetime.timedelta(days=14)
+    with session_scope() as session:
+      candles = session.query(cls).filter(cls.time < start).all()
+
+    if candles is None:
+      return None
+
+    for candle in candles:
+      session.delete(candle)
+      session.commit()
+
 
   @property
   def value(self):
@@ -103,6 +120,9 @@ class UsdJpyBaseCandle4H(BaseCandleMixin, Base):
 class UsdJpyBaseCandle1H(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_1H'
 
+class UsdJpyBaseCandle30M(BaseCandleMixin, Base):
+  __tablename__ = 'USD_JPY_30M'
+
 class UsdJpyBaseCandle5M(BaseCandleMixin, Base):
   __tablename__ = 'USD_JPY_5M'
 
@@ -118,6 +138,9 @@ class GbpJpyBaseCandle4H(BaseCandleMixin, Base):
 class GbpJpyBaseCandle1H(BaseCandleMixin, Base):
   __tablename__ = 'GBP_JPY_1H'
 
+class GbpJpyBaseCandle30M(BaseCandleMixin, Base):
+  __tablename__ = 'GBP_JPY_30M'
+
 class GbpJpyBaseCandle5M(BaseCandleMixin, Base):
   __tablename__ = 'GBP_JPY_5M'
 
@@ -129,6 +152,8 @@ def factory_base_candle(currency, duration) -> BaseCandleMixin:
     return UsdJpyBaseCandle4H
   elif currency == "USD_JPY" and duration == '1h':
     return UsdJpyBaseCandle1H
+  elif currency == "USD_JPY" and duration == '30m':
+    return UsdJpyBaseCandle30M
   elif currency == "USD_JPY" and duration == '1m':
     return UsdJpyBaseCandle1M
   elif currency == "USD_JPY" and duration == '5m':
@@ -139,6 +164,8 @@ def factory_base_candle(currency, duration) -> BaseCandleMixin:
     return GbpJpyBaseCandle4H
   elif currency == "GBP_JPY" and duration == '1h':
     return GbpJpyBaseCandle1H
+  elif currency == "GBP_JPY" and duration == '30m':
+    return GbpJpyBaseCandle30M
   elif currency == "GBP_JPY" and duration == '1m':
     return GbpJpyBaseCandle1M
   elif currency == "GBP_JPY" and duration == '5m':

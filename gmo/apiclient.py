@@ -280,6 +280,10 @@ class Ticker(object):
       new_minute = math.floor(self.time.minute / 5) * 5
       ticker_time = datetime(self.time.year, self.time.month, self.time.day, self.time.hour, new_minute)
       time_format = '%Y-%m-%d %H:%M'
+    elif duration == '30m':
+      new_minute = math.floor(self.time.minute / 30) * 30
+      ticker_time = datetime(self.time.year, self.time.month, self.time.day, self.time.hour, new_minute)
+      time_format = '%Y-%m-%d %H:%M'
     elif duration == '1h':
       time_format = '%Y-%m-%d %H'
     elif duration == '1s':
