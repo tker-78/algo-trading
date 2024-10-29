@@ -2,6 +2,8 @@ services:
   db:
     image: postgres
     container_name: postgres__db_container
+    ports:
+      - "5432:5432"
     volumes:
     - postgres_data:/var/lib/postgresql/data
     environment:
@@ -13,7 +15,7 @@ services:
     volumes:
       - .:/usr/src/app
     depends_on:
-      - postgres
+      - db
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_USER=postgres
