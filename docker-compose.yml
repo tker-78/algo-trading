@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres
+    container_name: postgres__db_container
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres_db
+  app:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres_db
+volumes:
+  postgres_data:

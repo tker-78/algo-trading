@@ -9,7 +9,6 @@ from gmo.apiclient import Ticker
 import pytz
 import constants
 import settings
-import schedule
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +66,8 @@ class Streamer():
 
     # Convert the datetime object to JST
     jst_dateTime = dateTime.astimezone(pytz.timezone('Asia/Tokyo'))
-    offset = datetime.timedelta(hours=9)
-    jst_dateTime = jst_dateTime + offset
+    # offset = datetime.timedelta(hours=9)
+    # jst_dateTime = jst_dateTime + offset
 
     # tickerオブジェクトを作成する
     ticker = Ticker(jst_dateTime, data["bid"], data["ask"])
@@ -116,6 +115,7 @@ class Streamer():
 
     try:
       self.ws.on_message = self.on_message
+      print(self.ws.on_message)
       self.ws.on_open = self.on_open
       self.ws.run_forever()
     except Exception as e:

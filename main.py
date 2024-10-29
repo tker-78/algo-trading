@@ -106,5 +106,8 @@ if __name__ == '__main__':
 
 
     # uncomment here if you want to run the automatic trading
-    execute()
+    try:
+        execute()
+    except Exception as e:
+        print(f'error: {e}')
 

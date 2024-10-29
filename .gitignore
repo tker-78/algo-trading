@@ -5,3 +5,4 @@ settings.ini
 .venv
 .sample_code
 data/*
+.idea
