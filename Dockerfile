@@ -1,8 +1,8 @@
 FROM python:3.12
 WORKDIR /
 
-COPY ta-lib ta-lib
-WORKDIR /
+COPY ta-lib-0.4.0-src.tar.gz ta-lib-0.4.0-src.tar.gz
+RUN tar -xzf ta-lib-0.4.0-src.tar.gz
 WORKDIR /ta-lib
 RUN ./configure --prefix=/usr --build=arm
 RUN make
