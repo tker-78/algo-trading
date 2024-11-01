@@ -15,7 +15,25 @@ logger = logging.getLogger(__name__)
 class Streamer():
   def __init__(self, currency):
     self.currency = currency
+  def __init__(self, currency):
+    self.currency = currency
   def on_open(self, ws, option={}):
+    """
+    This method is called when the websocket connection is established.
+
+    Args:
+        ws (WebSocketApp): The websocket app instance.
+        option (dict, optional): Additional options for the websocket connection. Defaults to {}.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    Sends a subscription request to the websocket server for the specified symbol.
+    """
+
     """
     This method is called when the websocket connection is established.
 
@@ -37,11 +55,27 @@ class Streamer():
       "command": "subscribe",
       "channel": "ticker",
       "symbol": self.currency 
+      "symbol": self.currency 
     }
     ws.send(json.dumps(message))
     logging.info('action=websocket on_open finished.')
 
   def on_message(self, message, ws):
+    """
+    This method is called when a message is received from the websocket server.
+
+    Args:
+        message (str): The raw message received from the server.
+        ws (WebSocketApp): The websocket app instance.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    Processes the received message, extracts the relevant data, and performs necessary actions.
+    """
     """
     This method is called when a message is received from the websocket server.
 
@@ -82,14 +116,35 @@ class Streamer():
       #   logger.info(f'action=on_message candle created | {duration} | {ticker.values}')
       #   print("{} candle created".format(duration))
       #   print("ticker", ticker.values)
+      create_candle(ticker, duration, self.currency)
+      # if is_created:
+      #   logger.info(f'action=on_message candle created | {duration} | {ticker.values}')
+      #   print("{} candle created".format(duration))
+      #   print("ticker", ticker.values)
 
+    if ticker.time.minute == 59:
     if ticker.time.minute == 59:
       self.ws.close()
       print(f'websocket closed | {ticker.time}')
       logger.info(f'action=on_message websocket closed at specified time | {ticker.time}')
+      logger.info(f'action=on_message websocket closed at specified time | {ticker.time}')
 
 
   def run(self):
+
+    """
+    Starts the websocket connection and runs it forever.
+
+    Args:
+        self (Streamer): An instance of the Streamer class.
+
+    Raises:
+        Exception: If an error occurs during the websocket connection.
+
+    Returns:
+        None
+
+    """
 
     """
     Starts the websocket connection and runs it forever.

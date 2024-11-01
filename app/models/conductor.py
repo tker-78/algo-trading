@@ -53,6 +53,7 @@ class Conductor(object):
     '''データを取得する'''
     df = DataframeCandle(self.duration)
     df.set_all_candles(limit=20)
+    df.set_all_candles(limit=20)
 
     data = []
     for candle in df.candles:
