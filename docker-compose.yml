@@ -12,7 +12,7 @@ services:
       - POSTGRES_DB=postgres_db
 
   trading:
-    build: .
+    image: kktak02/algo-trading-trading:latest
     command: bash -c "python3 main_stream_usd.py"
     volumes:
       - .:/usr/src/app
