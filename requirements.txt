@@ -111,3 +111,4 @@ wcwidth
 zope.event        
 zope.interface    
 schedule
+psycopg2

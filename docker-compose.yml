@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres
-    container_name: postgres__db_container
+    container_name: postgres_db_container
     ports:
       - "5432:5432"
     volumes:
@@ -10,8 +10,10 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres_db
-  app:
+
+  trading:
     build: .
+    command: bash -c "python3 main_stream_usd.py"
     volumes:
       - .:/usr/src/app
     depends_on:
@@ -21,5 +23,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres_db
+
 volumes:
   postgres_data:
