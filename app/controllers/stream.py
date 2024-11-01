@@ -55,7 +55,6 @@ class Streamer():
       "command": "subscribe",
       "channel": "ticker",
       "symbol": self.currency 
-      "symbol": self.currency 
     }
     ws.send(json.dumps(message))
     logging.info('action=websocket on_open finished.')
@@ -122,7 +121,6 @@ class Streamer():
       #   print("{} candle created".format(duration))
       #   print("ticker", ticker.values)
 
-    if ticker.time.minute == 59:
     if ticker.time.minute == 59:
       self.ws.close()
       print(f'websocket closed | {ticker.time}')
