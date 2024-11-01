@@ -203,7 +203,7 @@ class APIPrivate(APIPublic):
     res = requests.post(self.endpoint + self.path, headers=self.client.headers, data=json.dumps(reqBody))
     return res.json()
 
-  def close_order(self, position_id: int, size: str):
+  def close_order(self, position_id: int, size: str, side: str):
       '''
       position_idを指定して決済する
       {
@@ -228,12 +228,14 @@ class APIPrivate(APIPublic):
         "responsetime": "2019-03-19T01:07:24.557Z"
       }
       '''
+      
       method = 'POST'
       self.path = '/v1/closeOrder'
       timestamp = '{0}000'.format(int(time.mktime(datetime.now().timetuple())))
+      # sideには決済する側の処理を書く。(買いポジションの解消ならSELL)
       reqBody = {
         "symbol": settings.tradeCurrency,
-        "side": 'SELL',
+        "side": side,
         "executionType": 'MARKET',
         "settlePosition": [
             {

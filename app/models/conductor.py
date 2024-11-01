@@ -122,7 +122,7 @@ class Conductor(object):
     if size is None:
         # 資産100,000円毎に10,000枚を購入量を設定する
         equity = self.get_equity()
-        size = int(math.floor(equity / 100000)) * 10000
+        size = int(math.floor(equity / 90000)) * 10000
         
     res = self.api_client.place_buy_order(size)
     # {'status': 0, 'data': [{'executionType': 'MARKET', 'orderId': 4015908, 'orderType': 'NORMAL', 'rootOrderId': 4015908, 'settleType': 'OPEN', 'side': 'BUY', 'size': '10000', 'status': 'EXECUTED', 'symbol': 'USD_JPY', 'timestamp': '2024-03-29T08:21:25.984Z'}], 'responsetime': '2024-03-29T08:21:26.245Z'}
@@ -139,30 +139,34 @@ class Conductor(object):
         return True
     return False
 
-  def place_sell_order(self) -> bool:
+  def place_sell_order(self, size=None) -> bool:
     '''新規の売り注文を発行する
     '''
-    logger.info(f'action=place_sell_order: starting')
-    res = self.api_client.place_sell_order(size=self.units)
-    logger.info(f'action=place_sell_order: finished | res={res}')
+    if size is None:
+        # 資産100,000円毎に10,000枚を購入量を設定する
+        equity = self.get_equity()
+        size = int(math.floor(equity / 90000)) * 10000
 
+    res = self.api_client.place_sell_order(size)
+
+
+    print("sell order:", res)
     if res["data"][0]["status"] == 'EXECUTED':
-        size = int(res["data"][0]["size"])
-        logger.info(f'action=place_sell_order: get_execution() starting...')
-        execution = self.api_client.get_execution(str(res["data"][0]["positionId"]))
-        logger.info(f'action=place_sell_order: api_client.get_execution() finished | res={execution}')
+        execution = self.api_client.get_execution(str(res["data"][0]["orderId"]))
         price = float(execution["data"]["list"][0]["price"])
-        self.balance += size * price
-        self.units = 0
+        self.balance -= size * price
+        self.units += size
         self.trades += 1
-        self.position = 0
-        self.active_orders.append(res["data"][0]["positionId"])
+        self.position = 1
+        self.active_orders.append(execution["data"]["list"][0]["positionId"])
         return True
-    else:
-        return False
+    return False
 
-  def close_position(self):
-      '''建玉を決済する'''
+  def close_position(self, side: str):
+      '''
+      建玉を決済する
+      side: 'BUY' or 'SELL'
+      '''
       # 決済する建玉IDを取得する
       logger.info(f'action=close_position: get_execution() starting...')
       res = self.api_client.get_open_positions()
@@ -171,7 +175,7 @@ class Conductor(object):
       size = str(res["data"]["list"][0]["size"])
 
       logger.info(f'action=close_position: close_order() starting...')
-      res_close = self.api_client.close_order(position_id, size)
+      res_close = self.api_client.close_order(position_id, size, side)
       logger.info(f'action=close_position: close_order() finished | res_close={res_close}')
 
       if res_close["data"][0]["status"] == 'EXECUTED':

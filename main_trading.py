@@ -22,8 +22,8 @@ if __name__ == '__main__':
             cls.delete_invalid_candles()
         logger.info(f"delete invalid candles finished")
 
-    def trade_rules_and_execution(last_momentum, latest_momentum):
-        if last_momentum > constants.BUY_MOMENTUM_LOWER and cond.position == 0 and cond.check_spread():
+    def trade_rules_and_execution_long(last_momentum, latest_momentum):
+        if last_momentum > constants.BUY_MOMENTUM_LOWER_LONG and cond.position == 0 and cond.check_spread():
             # スプレッドの制限が必要であれば、cond.check_spread()を購入条件に追加する
             logger.info(f'action=execute place buy order | {cond.values}')
             is_ok = cond.place_buy_order()
@@ -31,14 +31,14 @@ if __name__ == '__main__':
                 logger.info(f'action=execute place buy order successful')
             else:
                 logger.info(f'action=execute place buy order failed')
-        elif last_momentum < constants.SELL_MOMENTUM and cond.position == 1:
-            is_ok = cond.close_position()
+        elif last_momentum < constants.SELL_MOMENTUM_LONG and cond.position == 1:
+            is_ok = cond.close_position("SELL")
             if is_ok:
                 logger.info(f'action=execute place sell order successful')
             else:
                 logger.info(f'action=execute place sell order failed')
-        elif latest_momentum < constants.LOSSCUT_MOMENTUM and cond.position == 1:
-            is_ok = cond.close_position()
+        elif latest_momentum < constants.LOSSCUT_MOMENTUM_LONG and cond.position == 1:
+            is_ok = cond.close_position("SELL")
             if is_ok:
                 logger.info(f'action=execute losscut executed.')
                 # ロスカットした場合は、一定時間取引を凍結する。
@@ -46,6 +46,30 @@ if __name__ == '__main__':
                 time.sleep(constants.LOSS_CUT_SLEEP_TIME[cond.duration])
             else:
                 logger.info(f'action=execute losscut failed.')
+    
+    def trade_rules_and_execution_short(last_momentum, latest_momentum):
+        if last_momentum < constants.SELL_MOMENTUM_UPPER_SHORT and cond.position == 0 and cond.check_spread():
+            logger.info(f'action=execute place sell order | {cond.values}')
+            is_ok = cond.place_sell_order()
+            if is_ok:
+                logger.info(f'action=execute place sell order successful')
+            else:
+                logger.info(f'action=execute place sell order failed')
+        elif last_momentum > constants.BUY_MOMENTUM_SHORT and cond.position == 1:
+            is_ok = cond.close_position("BUY")
+            if is_ok:
+                logger.info(f'action=execute place buy order successful')
+            else:
+                logger.info(f'action=execute place buy order failed')
+        elif latest_momentum > constants.LOSSCUT_MOMENTUM_SHORT and cond.position == 1:
+            is_ok = cond.close_position("BUY")
+            if is_ok:
+                logger.info(f'action=execute losscut executed.')
+                logger.info(f'snoozing the trade for {cond.duration}')
+                time.sleep(constants.LOSS_CUT_SLEEP_TIME[cond.duration])
+            else:
+                logger.info(f'action=execute losscut failed.')
+
         
 
 
@@ -66,19 +90,6 @@ if __name__ == '__main__':
         logger.info(f'cond.values: {cond.values}')
 
         while True:
-            # 自動トレード終了の条件を指定
-            # try: 
-            #     equity = cond.get_equity()
-            #     if equity < cond.initial_balance * 0.8:
-            #         logger.info(f'action=execute close_out started')
-            #         cond.close_out()
-            #         logger.info(f'action=execute close_out finished')
-            #         break
-            # except Exception as e:
-            #     print(f'error: {e}')
-            #     logger.info(f'error: {e}')
-            ##############################
-
             # momentumを指定してデータを生成する
             cond.get_data(int(settings.tradeMomentum))
             logger.info(f'cond.values: {cond.values}')
@@ -103,7 +114,7 @@ if __name__ == '__main__':
             
             # トレードを実行する関数(実行する場合はアンコメント)
             if len(cond.data) > int(settings.tradeMomentum) + 1:
-                trade_rules_and_execution(last_momentum, latest_momentum)
+                trade_rules_and_execution_long(last_momentum, latest_momentum)
 
             # trade duration毎に設定した秒数待機する
             time.sleep(constants.SLEEP_TIME[cond.duration])

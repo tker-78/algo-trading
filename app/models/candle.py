@@ -179,7 +179,7 @@ def create_candle(ticker: Ticker, duration, currency) -> bool:
   current_candle = cls.get(ticker_time)
   price = ticker.mid_price
   if current_candle is None:
-    cls.create(ticker_time, price, price, price, price, 0)
+    cls.create(ticker_time, price, price, price, price)
     return True
 
   if current_candle.high < price:
