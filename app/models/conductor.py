@@ -60,7 +60,6 @@ class Conductor(object):
 
     candles = pd.DataFrame(data)
     candles['time'] = pd.to_datetime(candles['time'])
-    candles['volume'] = 0
     candles['return'] = np.log(candles['close'] / candles['close'].shift(1))
     candles['momentum'] = candles['return'].rolling(momentum).mean()
     candles = candles.set_index('time')

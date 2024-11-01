@@ -27,8 +27,8 @@ class BaseCandleMixin(object):
   volume = Column(Integer)
 
   @classmethod
-  def create(cls, time, open, close, high, low, volume):
-    candle = cls(time=time, open=open, close=close, high=high, low=low, volume=volume)
+  def create(cls, time, open, close, high, low):
+    candle = cls(time=time, open=open, close=close, high=high, low=low)
     try:
       with session_scope() as session:
           session.add(candle)
@@ -51,7 +51,7 @@ class BaseCandleMixin(object):
   @classmethod
   def get_all_candles(cls, limit=100):
     with session_scope() as session:
-      candles = session.query(cls).all()
+      candles = session.query(cls).order_by(cls.time).all()
     
     if candles is None:
       return None

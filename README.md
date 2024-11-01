@@ -39,12 +39,27 @@ streamは稼働し続ける。
 ## 使い方
 mainスクリプトを`main.py`, `main_stream.py`の２つに分けている。
 main.pyは自動売買の実行を、main_stream.pyはstreamデータの受信と保管を担当している。
-tmuxなどを使って、別のプロセスで同時に起動することで自動売買が成立する。
+Dockerを使って環境構築を行う。
+
+```bash
+$ docker compose up --build
+
+# db containerにアタッチ
+$ docker compose exec db /bin/bash
+
+# trading用containerにアタッチ
+$ docker compose exec trading /bin/bash
+```
+
+
+
 
 - [ ] 適切な例外処理を行う
 - [x] 取引時間外はプログラムの実行を停止またはスリープするようにスケジューリングする
 - [ ] main.pyの不測の停止時に再起動できるようにする
 - [ ] ask, bidのデータを格納するデータベースを作成する
+
+
 
 
 
