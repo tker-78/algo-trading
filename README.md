@@ -41,25 +41,39 @@ mainスクリプトを`main.py`, `main_stream.py`の２つに分けている。
 main.pyは自動売買の実行を、main_stream.pyはstreamデータの受信と保管を担当している。
 Dockerを使って環境構築を行う。
 
+
+## Dockerでの環境構築
+
+Dockerイメージをlocalでビルドして、クラウドから利用する。
+
+
+
+
+
+
+マルチプラットフォームのビルド
 ```bash
-$ docker compose up --build
-
-# db containerにアタッチ
-$ docker compose exec db /bin/bash
-
-# trading用containerにアタッチ
-$ docker compose exec trading /bin/bash
+$ docker buildx build --platform=linux/amd64,linux/arm64 .
 ```
 
+```bash
+$ docker pull kktak02/algo-trading-trading:latest
+```
 
+```bash
+$ docker compose up -d
+$ docker compose exec -d trading python3 main_trading.py
+```
 
+実行中のトレードのログ確認
+```bash
+$ tail -f trading.log
+```
 
-- [ ] 適切な例外処理を行う
-- [x] 取引時間外はプログラムの実行を停止またはスリープするようにスケジューリングする
-- [ ] 日足の100日移動平均の正負で、ロング/ショートを切り替える。
-
-
-
+トレードを強制終了
+```bash
+$ docker compose stop trading
+```
 
 
 ## 使いにくい点
