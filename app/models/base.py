@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 # engine = create_engine(f'sqlite:///{settings.dbName}.sqlite?check_same_thread=False', pool_pre_ping=True)
-engine = create_engine(f'postgresql+psycopg2://postgres:postgres@postgres_db_container/postgres_db')
+engine = create_engine(f'postgresql+psycopg2://postgres:postgres@postgres_db_container/postgres_db', pool_pre_ping=True)
 Session = scoped_session(sessionmaker(bind=engine))
 lock = threading.Lock()
 

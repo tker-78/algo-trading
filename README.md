@@ -54,6 +54,8 @@ Dockerイメージをlocalでビルドして、クラウドから利用する。
 マルチプラットフォームのビルド
 ```bash
 $ docker buildx build --platform=linux/amd64,linux/arm64 .
+$ docker tag fcdc13304493 kktak02/algo-trading-trading:latest
+$ docker push kktak02/algo-trading-trading:test
 ```
 
 ```bash

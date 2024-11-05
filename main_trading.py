@@ -5,10 +5,13 @@ from app.models.conductor import Conductor
 from app.models.candle import factory_base_candle
 import constants
 from app.models.candle import factory_base_candle
+from logging.handlers import RotatingFileHandler
 
 
 logging.basicConfig(level=logging.INFO, filename=settings.logFileName, format='%(asctime)s - %(name)s - %(levelname)s -%(message)s')
 logger = logging.getLogger(__name__)
+
+handler = RotatingFileHandler(settings.logFileName, maxBytes=10 * 1024, backupCount=10)
 
 if __name__ == '__main__':
 
